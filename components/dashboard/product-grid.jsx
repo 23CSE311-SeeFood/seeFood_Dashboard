@@ -73,15 +73,15 @@ export function ProductGrid() {
             {/* Categories */}
             <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2">
                 {categories.map((cat, idx) => (
-                    <button
+                    <Button
                         key={idx}
-                        className={`
-                    px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors
-                    ${idx === 0 ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}
-                `}
+                        variant={idx === 0 ? "default" : "outline"}
+                        className={`whitespace-nowrap rounded-full ${
+                            idx === 0 ? "bg-emerald-600 text-white hover:bg-emerald-700 border-0" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                        }`}
                     >
                         {cat}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
@@ -102,13 +102,17 @@ export function ProductGrid() {
 
                         <div className="flex gap-3 mt-auto">
                             <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                <button className="p-1 hover:bg-white rounded-md transition-colors"><Minus className="w-4 h-4 text-gray-500" /></button>
+                                <Button variant="ghost" size="icon" className="size-8 p-1 hover:bg-white rounded-md">
+                                    <Minus className="w-4 h-4 text-gray-500" />
+                                </Button>
                                 <span className="w-8 text-center text-sm font-medium text-gray-900">0</span>
-                                <button className="p-1 hover:bg-white rounded-md transition-colors"><Plus className="w-4 h-4 text-gray-500" /></button>
+                                <Button variant="ghost" size="icon" className="size-8 p-1 hover:bg-white rounded-md">
+                                    <Plus className="w-4 h-4 text-gray-500" />
+                                </Button>
                             </div>
-                            <button className="flex-1 bg-white border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors">
+                            <Button variant="outline" className="flex-1 border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50">
                                 Add to cart
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 ))}

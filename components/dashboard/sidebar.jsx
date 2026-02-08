@@ -9,11 +9,10 @@ import {
     Users,
     Settings,
     HelpCircle,
-    LogOut,
-    ChevronDown,
     Plus
 } from "lucide-react";
 import { useAuth } from "@/components/global/auth-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
@@ -45,12 +44,13 @@ export function Sidebar() {
             {/* Navigation */}
             <div className="flex-1 overflow-y-auto px-4 space-y-1">
                 {menuItems.map((item, index) => (
-                    <button
+                    <Button
                         key={index}
+                        variant="ghost"
                         className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-xl text-sm transition-colors",
+                            "w-full flex items-center justify-between p-3 rounded-xl text-sm transition-colors h-auto font-normal",
                             item.active
-                                ? "bg-[#B1464A]/10 text-[#B1464A] font-bold"
+                                ? "bg-[#B1464A]/10 text-[#B1464A] font-bold hover:bg-[#B1464A]/15"
                                 : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                         )}
                     >
@@ -63,18 +63,18 @@ export function Sidebar() {
                                 {item.badge}
                             </span>
                         )}
-                    </button>
+                    </Button>
                 ))}
 
                 <div className="pt-8 pb-2">
-                    <button className="w-full flex items-center gap-3 p-3 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-50 transition-colors text-sm">
+                    <Button variant="ghost" className="w-full justify-start gap-3 p-3 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-50 text-sm h-auto font-normal">
                         <Settings className="w-5 h-5" />
                         <span>Settings</span>
-                    </button>
-                    <button className="w-full flex items-center gap-3 p-3 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-50 transition-colors text-sm">
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start gap-3 p-3 text-gray-500 hover:text-gray-900 rounded-xl hover:bg-gray-50 text-sm h-auto font-normal">
                         <HelpCircle className="w-5 h-5" />
                         <span>Help center</span>
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -94,17 +94,18 @@ export function Sidebar() {
                         </div>
                     </div>
 
-                    <button className="w-full py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2 mb-3">
-                        <Plus className="w-3 h-3" />
+                    <Button variant="outline" className="w-full py-2 bg-white border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 h-auto mb-3">
+                        <Plus className="w-3 h-3 mr-2" />
                         Add account
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                        variant="link"
                         onClick={logout}
-                        className="w-full text-center text-xs text-red-500 hover:text-red-600 font-medium"
+                        className="w-full text-center text-xs text-red-500 hover:text-red-600 font-medium h-auto p-0"
                     >
                         Sign out
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

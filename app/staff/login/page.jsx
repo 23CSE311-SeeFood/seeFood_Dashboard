@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/components/global/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Shield, CreditCard, User } from 'lucide-react';
 
 
@@ -55,49 +56,57 @@ export default function LoginPage() {
                     <form onSubmit={handleLogin} className="space-y-6 mt-8">
                         {/* Inputs: Email & Password */}
                         <div className="space-y-4">
-                            <Input
-                                type="email"
-                                placeholder="EMAIL"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
-                            />
-                            <Input
-                                type="password"
-                                placeholder="PASSWORD"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
-                            />
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-gray-600 font-medium">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="EMAIL"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-gray-600 font-medium">Password</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="PASSWORD"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
+                                />
+                            </div>
                         </div>
 
-                        {/* Input 2: Role Selector - Visualized as clickable gray bars or similar */}
+                        {/* Role Selector */}
                         <div className="grid grid-cols-3 gap-3">
                             {roles.map((role) => (
-                                <button
+                                <Button
                                     key={role.id}
                                     type="button"
+                                    variant={selectedRole === role.id ? "default" : "outline"}
                                     onClick={() => setSelectedRole(role.id)}
-                                    className={`
-                          h-24 flex flex-col items-center justify-center gap-2 rounded-md transition-all border
-                          ${selectedRole === role.id
-                                            ? 'bg-[#B1464A] text-white border-[#B1464A] shadow-md scale-105'
-                                            : 'bg-white border-gray-200 text-gray-400 hover:bg-gray-50'}
-                       `}
+                                    className={`h-24 flex flex-col gap-2 rounded-md transition-all ${
+                                        selectedRole === role.id
+                                            ? "bg-[#B1464A] text-white border-[#B1464A] shadow-md scale-105 hover:bg-[#A04144]"
+                                            : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
+                                    }`}
                                 >
                                     <role.icon className="h-6 w-6" />
                                     <span className="text-xs font-bold uppercase">{role.label}</span>
-                                </button>
+                                </Button>
                             ))}
                         </div>
 
 
                         <Button
-                            onClick={handleLogin}
+                            type="submit"
                             disabled={loading || !email || !password}
                             className="w-full h-14 bg-[#BD6467] hover:bg-[#A04144] text-white font-bold text-lg rounded-md mt-4 transition-transform active:scale-95 shadow-md"
                         >
-                            {loading ? 'AUTHENTICATING...' : 'ENTER DASHBOARD'}
+                            {loading ? "AUTHENTICATING..." : "ENTER DASHBOARD"}
                         </Button>
                     </form>
                 </div>

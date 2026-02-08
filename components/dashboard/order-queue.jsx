@@ -1,6 +1,7 @@
 "use client";
 
-import { Eye, ChevronRight, Box, Clock } from "lucide-react";
+import { Eye, ChevronRight, Box } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function OrderQueue() {
     const orders = [
@@ -57,12 +58,13 @@ export function OrderQueue() {
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Order queues</h2>
                 <div className="flex gap-2">
-                    <button className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500">
+                    <Button variant="outline" size="icon" className="border-gray-200 text-gray-500 hover:bg-gray-50">
                         <Eye className="w-5 h-5" />
-                    </button>
-                    <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-600 flex items-center gap-2">
+                    </Button>
+                    <Button variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-50">
+                        <ChevronRight className="w-4 h-4 mr-1" />
                         View All
-                    </button>
+                    </Button>
                 </div>
             </div>
 
