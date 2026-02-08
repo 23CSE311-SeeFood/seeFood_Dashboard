@@ -3,7 +3,7 @@
 import { User, MapPin, Trash2, Minus, Plus, TicketPercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+//test commit
 export function CartPanel() {
     const cartItems = [
         {
