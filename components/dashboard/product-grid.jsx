@@ -3,6 +3,7 @@
 import { Search, SlidersHorizontal, Plus, Minus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function ProductGrid() {
     const categories = ["Appetizers", "Seafood platters", "Fish", "Shrimp", "Crab", "Squid", "Rice", "Drinks", "Dessert"];
@@ -88,33 +89,34 @@ export function ProductGrid() {
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-2 pb-20">
                 {products.map((product) => (
-                    <div key={product.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-                        <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-gray-100">
-                            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
-                        <div className="flex justify-between items-end mb-4">
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">$ {product.price} / serving</p>
-                                <p className="text-xs text-gray-400">{product.category}</p>
+                    <Card key={product.id} className="rounded-2xl flex flex-col hover:shadow-md transition-shadow overflow-hidden">
+                        <CardContent className="p-4 flex flex-col flex-1">
+                            <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-gray-100">
+                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                             </div>
-                        </div>
-
-                        <div className="flex gap-3 mt-auto">
-                            <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                <Button variant="ghost" size="icon" className="size-8 p-1 hover:bg-white rounded-md">
-                                    <Minus className="w-4 h-4 text-gray-500" />
-                                </Button>
-                                <span className="w-8 text-center text-sm font-medium text-gray-900">0</span>
-                                <Button variant="ghost" size="icon" className="size-8 p-1 hover:bg-white rounded-md">
-                                    <Plus className="w-4 h-4 text-gray-500" />
+                            <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
+                            <div className="flex justify-between items-end mb-4">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900">$ {product.price} / serving</p>
+                                    <p className="text-xs text-gray-400">{product.category}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 mt-auto">
+                                <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
+                                    <Button variant="ghost" size="icon" className="size-8 p-1 hover:bg-white rounded-md">
+                                        <Minus className="w-4 h-4 text-gray-500" />
+                                    </Button>
+                                    <span className="w-8 text-center text-sm font-medium text-gray-900">0</span>
+                                    <Button variant="ghost" size="icon" className="size-8 p-1 hover:bg-white rounded-md">
+                                        <Plus className="w-4 h-4 text-gray-500" />
+                                    </Button>
+                                </div>
+                                <Button variant="outline" className="flex-1 border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50">
+                                    Add to cart
                                 </Button>
                             </div>
-                            <Button variant="outline" className="flex-1 border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50">
-                                Add to cart
-                            </Button>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
         </div>

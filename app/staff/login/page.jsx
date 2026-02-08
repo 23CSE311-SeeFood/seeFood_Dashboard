@@ -5,6 +5,7 @@ import { useAuth } from '@/components/global/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, CreditCard, User } from 'lucide-react';
 
 
@@ -47,69 +48,65 @@ export default function LoginPage() {
 
             {/* Right Panel - White/Light */}
             <div className="flex-1 bg-white flex items-center justify-center p-8">
-                <div className="w-full max-w-md space-y-8 border border-gray-300 rounded-xl p-10 shadow-lg bg-gray-50/50">
-                    <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-bold text-black uppercase tracking-wider">Staff Login</h2>
-                        <p className="text-sm text-gray-400">Enter your credentials to access the ops dashboard</p>
-                    </div>
-
-                    <form onSubmit={handleLogin} className="space-y-6 mt-8">
-                        {/* Inputs: Email & Password */}
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-gray-600 font-medium">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="EMAIL"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
-                                />
+                <Card className="w-full max-w-md border-gray-300 shadow-lg bg-gray-50/50">
+                    <CardHeader className="text-center space-y-2">
+                        <CardTitle className="text-2xl text-black uppercase tracking-wider">Staff Login</CardTitle>
+                        <CardDescription className="text-sm text-gray-400">Enter your credentials to access the ops dashboard</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-10 pt-0">
+                        <form onSubmit={handleLogin} className="space-y-6">
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-gray-600 font-medium">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="EMAIL"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="password" className="text-gray-600 font-medium">Password</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="PASSWORD"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password" className="text-gray-600 font-medium">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="PASSWORD"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
-                                />
+                            <div className="grid grid-cols-3 gap-3">
+                                {roles.map((role) => (
+                                    <Button
+                                        key={role.id}
+                                        type="button"
+                                        variant={selectedRole === role.id ? "default" : "outline"}
+                                        onClick={() => setSelectedRole(role.id)}
+                                        className={`h-24 flex flex-col gap-2 rounded-md transition-all ${
+                                            selectedRole === role.id
+                                                ? "bg-[#B1464A] text-white border-[#B1464A] shadow-md scale-105 hover:bg-[#A04144]"
+                                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
+                                        }`}
+                                    >
+                                        <role.icon className="h-6 w-6" />
+                                        <span className="text-xs font-bold uppercase">{role.label}</span>
+                                    </Button>
+                                ))}
                             </div>
-                        </div>
-
-                        {/* Role Selector */}
-                        <div className="grid grid-cols-3 gap-3">
-                            {roles.map((role) => (
-                                <Button
-                                    key={role.id}
-                                    type="button"
-                                    variant={selectedRole === role.id ? "default" : "outline"}
-                                    onClick={() => setSelectedRole(role.id)}
-                                    className={`h-24 flex flex-col gap-2 rounded-md transition-all ${
-                                        selectedRole === role.id
-                                            ? "bg-[#B1464A] text-white border-[#B1464A] shadow-md scale-105 hover:bg-[#A04144]"
-                                            : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
-                                    }`}
-                                >
-                                    <role.icon className="h-6 w-6" />
-                                    <span className="text-xs font-bold uppercase">{role.label}</span>
-                                </Button>
-                            ))}
-                        </div>
-
-
-                        <Button
-                            type="submit"
-                            disabled={loading || !email || !password}
-                            className="w-full h-14 bg-[#BD6467] hover:bg-[#A04144] text-white font-bold text-lg rounded-md mt-4 transition-transform active:scale-95 shadow-md"
-                        >
-                            {loading ? "AUTHENTICATING..." : "ENTER DASHBOARD"}
-                        </Button>
-                    </form>
-                </div>
+                            <Button
+                                type="submit"
+                                disabled={loading || !email || !password}
+                                className="w-full h-14 bg-[#BD6467] hover:bg-[#A04144] text-white font-bold text-lg rounded-md mt-4 transition-transform active:scale-95 shadow-md"
+                            >
+                                {loading ? "AUTHENTICATING..." : "ENTER DASHBOARD"}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

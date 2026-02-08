@@ -2,6 +2,7 @@
 
 import { Eye, ChevronRight, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function OrderQueue() {
     const orders = [
@@ -70,30 +71,30 @@ export function OrderQueue() {
 
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                 {orders.map((order, idx) => (
-                    <div key={idx} className="min-w-[300px] bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                            <span className="font-medium text-gray-500 text-sm">{order.id}</span>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                {getStatusLabel(order.status)}
-                            </span>
-                        </div>
-
-                        <div>
-                            <h3 className="font-bold text-gray-900">{order.customer}</h3>
-                            <p className="text-xs text-gray-400">{order.time}</p>
-                        </div>
-
-                        <div className="flex items-center gap-4 mt-1">
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
-                                <Box className="w-3.5 h-3.5" />
-                                <span>{order.items} Items</span>
+                    <Card key={idx} className="min-w-[300px] rounded-xl flex-shrink-0">
+                        <CardContent className="p-4 flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-500 text-sm">{order.id}</span>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                    {getStatusLabel(order.status)}
+                                </span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
-                                <div className="w-3.5 h-3.5 border border-gray-400 rounded-sm"></div>
-                                <span>Table {order.table}</span>
+                            <div>
+                                <h3 className="font-bold text-gray-900">{order.customer}</h3>
+                                <p className="text-xs text-gray-400">{order.time}</p>
                             </div>
-                        </div>
-                    </div>
+                            <div className="flex items-center gap-4 mt-1">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
+                                    <Box className="w-3.5 h-3.5" />
+                                    <span>{order.items} Items</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
+                                    <div className="w-3.5 h-3.5 border border-gray-400 rounded-sm"></div>
+                                    <span>Table {order.table}</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
         </div>
