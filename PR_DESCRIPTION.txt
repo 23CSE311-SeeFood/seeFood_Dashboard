@@ -1,0 +1,53 @@
+Title: feat: Add Staff Login + Auth Flow and UI Primitives
+
+Summary:
+This change introduces a baseline staff authentication flow and a set of UI primitives needed for operator/cashier/admin workflows. It adds a dedicated staff login page with role selection, an `AuthProvider` for session management, a `RoleGuard` route protection component, and basic UI components (`Button`, `Input`). The app layout now wraps pages with `AuthProvider` so sessions persist across navigation.
+
+What changed (high level):
+- Added Staff Login UI at `app/staff/login/page.jsx` (role selector, staff ID, login flow)
+- Implemented `AuthProvider` for login/logout, session persistence (`localStorage`), and navigation
+- Added `RoleGuard` to protect role-specific pages
+- Introduced reusable UI primitives: `components/ui/button.jsx` and `components/ui/input.jsx` (uses `cn` util and `class-variance-authority`)
+- Small utility: `lib/utils.js` adds `cn()` helper
+- Wrapped root layout with `AuthProvider` in `app/layout.jsx`
+- Updated project config/dependencies and assets (Tailwind / Next / public icons)
+
+Files of interest:
+- app/staff/login/page.jsx
+- components/global/auth-provider.jsx
+- components/global/role-guard.jsx
+- components/ui/button.jsx
+- components/ui/input.jsx
+- lib/utils.js
+- app/layout.jsx
+- package.json (new/updated deps)
+
+Motivation:
+Provide a simple, auditable staff login baseline so teams can build role-specific workflows (Admin, Cashier, Operator). The login is intentionally lightweight (mock device/shift info) and designed to be replaced when backend auth is added.
+
+How to test locally (manual):
+1. Install deps: `npm install` (if necessary).
+2. Run dev server: `npm run dev`.
+3. Navigate to `/staff/login`.
+4. Enter a STAFF ID and select a role (Admin / Cashier / Operator).
+5. Click "ENTER DASHBOARD" and verify:
+   - An alert shows successful login and the selected role.
+   - `localStorage` contains `seefood_session` with role and username.
+   - Cashier users navigate to `/staff/cashier`, others navigate to `/staff/dashboard`.
+6. Try accessing a protected route when not logged in; the `RoleGuard` should redirect to `/staff/login`.
+
+Notes & limitations:
+- Dashboard modules are currently removed for this baseline; the login page shows an alert noting the dashboard is not included.
+- Auth is client-side mock only (no backend integration). Audit logs are console-based for now.
+- Consider adding proper tests and end-to-end checks before enabling production rollout.
+
+Checklist:
+- [ ] Manual QA: login/logout and role redirects
+- [ ] Linting: `npm run lint`
+- [ ] Add unit/E2E tests for `AuthProvider` and `RoleGuard`
+- [ ] Add backend auth integration (future)
+
+Screenshots / Demos:
+- (Attach a screenshot of the login page and role selection here.)
+
+If you'd like, I can also open a draft PR body on GitHub or generate a shorter changelog entry for release notes.

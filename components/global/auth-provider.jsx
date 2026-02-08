@@ -17,17 +17,17 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
-    const login = (role, username) => {
+    const login = (role, email, password) => {
         const session = {
             role, // 'admin', 'cashier', 'operator'
-            username,
+            username: email, // Using email as the username/identifier
             device: 'TERM-01', // Mock device ID
             shift: 'MORNING-A', // Mock shift
             loginTimestamp: new Date().toISOString(),
         };
 
         // Audit Log (Console for now, or in-memory)
-        console.log(`[AUDIT] Login: ${username} as ${role} at ${session.loginTimestamp}`);
+        console.log(`[AUDIT] Login: ${email} as ${role} at ${session.loginTimestamp}`);
 
         setUser(session);
         localStorage.setItem('seefood_session', JSON.stringify(session));

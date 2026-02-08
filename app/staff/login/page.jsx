@@ -6,21 +6,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Shield, CreditCard, User } from 'lucide-react';
 
+
 export default function LoginPage() {
     const { login } = useAuth();
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [selectedRole, setSelectedRole] = useState('operator');
+
     const [loading, setLoading] = useState(false);
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (!username) return;
+        if (!email || !password) return;
         setLoading(true);
 
         setTimeout(() => {
-            login(selectedRole, username);
+            login(selectedRole, email, password);
             setLoading(false);
-            alert(`Login Successful!\nRole: ${selectedRole}\nID: ${username}\n\n(Dashboard module is currently removed for this baseline)`);
+            alert(`Login Successful!\nRole: ${selectedRole}\nEmail: ${email}\n\n(Dashboard module is currently removed for this baseline)`);
         }, 800);
     };
 
@@ -50,12 +53,20 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6 mt-8">
-                        {/* Input 1: Staff ID - Gray Bar Style */}
-                        <div className="space-y-1">
+                        {/* Inputs: Email & Password */}
+                        <div className="space-y-4">
                             <Input
-                                placeholder="STAFF ID"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                type="email"
+                                placeholder="EMAIL"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
+                            />
+                            <Input
+                                type="password"
+                                placeholder="PASSWORD"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="h-14 bg-white border border-gray-200 text-black placeholder:text-gray-400 text-lg px-6 rounded-md focus-visible:ring-2 focus-visible:ring-[#B1464A]"
                             />
                         </div>
@@ -80,9 +91,10 @@ export default function LoginPage() {
                             ))}
                         </div>
 
+
                         <Button
                             onClick={handleLogin}
-                            disabled={loading || !username}
+                            disabled={loading || !email || !password}
                             className="w-full h-14 bg-[#BD6467] hover:bg-[#A04144] text-white font-bold text-lg rounded-md mt-4 transition-transform active:scale-95 shadow-md"
                         >
                             {loading ? 'AUTHENTICATING...' : 'ENTER DASHBOARD'}
