@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, Plus, Minus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export function ProductGrid({ items }) {
     const [searchTerm, setSearchTerm] = useState("");
@@ -63,31 +64,31 @@ export function ProductGrid({ items }) {
             {/* Product Table */}
             <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col">
                 <div className="overflow-y-auto flex-1 p-0">
-                    <table className="w-full text-left text-sm text-gray-600">
-                        <thead className="bg-gray-50 text-gray-700 font-semibold sticky top-0 z-10 shadow-sm">
-                            <tr>
-                                <th className="px-6 py-4 w-2/3">Item</th>
-                                <th className="px-6 py-4 w-1/3 text-right">Price</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
+                    <Table>
+                        <TableHeader className="bg-gray-50 text-gray-700 font-semibold sticky top-0 z-10 shadow-sm">
+                            <TableRow>
+                                <TableHead className="px-6 py-4 w-2/3">Item</TableHead>
+                                <TableHead className="px-6 py-4 w-1/3 text-right">Price</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-100">
                             {products.map((product) => (
-                                <tr key={product.id} className="hover:bg-gray-50/80 transition-colors group cursor-pointer">
-                                    <td className="px-6 py-4 align-middle">
+                                <TableRow key={product.id} className="hover:bg-gray-50/80 transition-colors group cursor-pointer">
+                                    <TableCell className="px-6 py-4 align-middle">
                                         <div className="flex flex-col">
                                             <span className="font-bold text-gray-800 text-base mb-1">{product.name}</span>
                                             <span className="text-xs text-gray-500 inline-block bg-gray-100 px-2 py-0.5 rounded-full w-fit">
                                                 {product.category}
                                             </span>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right align-middle">
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 text-right align-middle">
                                         <span className="font-bold text-emerald-600 text-lg">Rs. {product.price}</span>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
         </div>

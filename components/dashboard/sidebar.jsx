@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/components/global/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import Link from "next/link";
@@ -66,9 +67,9 @@ export function Sidebar() {
                                 <span>{item.label}</span>
                             </div>
                             {item.badge && (
-                                <span className="bg-[#B1464A]/20 text-[#B1464A] text-xs px-2 py-0.5 rounded-full font-medium">
+                                <Badge variant="secondary" className="bg-[#B1464A]/20 text-[#B1464A] text-xs px-2 py-0.5">
                                     {item.badge}
-                                </span>
+                                </Badge>
                             )}
                         </Link>
                     );

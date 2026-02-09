@@ -3,6 +3,7 @@
 import { Eye, ChevronRight, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function OrderQueue() {
     const orders = [
@@ -32,16 +33,16 @@ export function OrderQueue() {
         },
     ];
 
-    const getStatusColor = (status) => {
+    const getStatusVariant = (status) => {
         switch (status) {
             case "ready":
-                return "bg-emerald-100 text-emerald-700";
+                return "default";
             case "cooking":
-                return "bg-amber-100 text-amber-700";
+                return "secondary";
             case "canceled":
-                return "bg-red-100 text-red-700";
+                return "destructive";
             default:
-                return "bg-gray-100 text-gray-700";
+                return "outline";
         }
     };
 
@@ -75,9 +76,9 @@ export function OrderQueue() {
                         <CardContent className="p-4 flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <span className="font-medium text-gray-500 text-sm">{order.id}</span>
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                <Badge variant={getStatusVariant(order.status)} className="px-3 py-1">
                                     {getStatusLabel(order.status)}
-                                </span>
+                                </Badge>
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-900">{order.customer}</h3>
