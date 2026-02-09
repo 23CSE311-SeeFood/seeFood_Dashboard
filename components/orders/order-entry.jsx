@@ -6,20 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { menuItems } from "@/lib/menu-data";
+
 export function OrderEntry({ onAdd }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
 
-    // Mock available items
-    const items = [
-        { id: 1, name: "Spicy Shrimp Rice", price: 8.99, category: "Seafood" },
-        { id: 2, name: "Garlic Fried Butter", price: 8.99, category: "Seafood" },
-        { id: 3, name: "Thai Hot Seafood", price: 8.99, category: "Seafood" },
-        { id: 4, name: "Sashimi Deluxe", price: 12.50, category: "Raw" },
-        { id: 5, name: "Grilled Salmon", price: 15.00, category: "Grill" },
-        { id: 6, name: "Lobster Thermidor", price: 45.00, category: "Premium" },
-    ];
+    // Filter available items
+    const items = menuItems;
 
     const filteredItems = items.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -72,7 +67,7 @@ export function OrderEntry({ onAdd }) {
                                     className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent hover:border-gray-100 ${selectedItem?.id === item.id ? "bg-white shadow-sm border-emerald-100 ring-1 ring-emerald-500/20" : "hover:bg-white hover:shadow-sm"}`}
                                 >
                                     <span className="font-medium text-gray-700">{item.name}</span>
-                                    <span className="text-gray-500 font-medium">Rs.{(item.price * 15000).toLocaleString()}</span>
+                                    <span className="text-gray-500 font-medium">Rs.{item.price.toLocaleString()}</span>
                                 </Button>
                             ))}
                         </div>
@@ -112,7 +107,7 @@ export function OrderEntry({ onAdd }) {
                             <div>
                                 <div className="text-sm text-gray-400 mb-1">Total Price</div>
                                 <div className="text-2xl font-bold text-emerald-600">
-                                    Rs.{((selectedItem.price * 15000) * quantity).toLocaleString()}
+                                    Rs.{(selectedItem.price * quantity).toLocaleString()}
                                 </div>
                             </div>
                             <Button onClick={handleAdd} className="w-full h-12 text-lg font-bold bg-[#B1464A] hover:bg-[#963c3f]">

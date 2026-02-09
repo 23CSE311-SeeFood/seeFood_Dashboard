@@ -26,7 +26,7 @@ export function Sidebar() {
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", href: "/staff/dashboard" },
         { icon: ShoppingBag, label: "Orders", href: "/staff/orders" },
-        { icon: ChefHat, label: "Menu Management", badge: "8", href: "/staff/menu" },
+        { icon: ChefHat, label: "Menu Management", href: "/staff/menu" },
         { icon: FileText, label: "Sales Reports", href: "/staff/sales" },
         { icon: Box, label: "Inventory Reports", href: "/staff/inventory" },
         { icon: Users, label: "Customer Directory", href: "/staff/customers" },

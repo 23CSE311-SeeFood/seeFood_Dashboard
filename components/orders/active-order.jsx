@@ -10,9 +10,7 @@ export function ActiveOrder({ items = [], onUpdateQty, onRemove }) {
     // but let's assume items coming in might have 'price' in USD, we need consistent currency.
     // OrderEntry had `item.price * 15000`. Let's assume passed items have the base price.
 
-    const calculatePrice = (price) => price * 15000;
-
-    const total = items.reduce((acc, item) => acc + (calculatePrice(item.price) * item.qty), 0);
+    const total = items.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
     return (
         <Card className="w-80 border-l border-gray-100 flex flex-col h-full shadow-sm rounded-none">
@@ -36,7 +34,7 @@ export function ActiveOrder({ items = [], onUpdateQty, onRemove }) {
                                 </Button>
                             </div>
                             <div className="flex items-center justify-between mt-1">
-                                <span className="text-sm font-bold text-emerald-600">Rs.{(calculatePrice(item.price) * item.qty).toLocaleString()}</span>
+                                <span className="text-sm font-bold text-emerald-600">Rs.{(item.price * item.qty).toLocaleString()}</span>
                                 <div className="flex items-center gap-2 bg-white rounded-md border border-gray-200 p-0.5">
                                     <Button variant="ghost" size="icon" onClick={() => onUpdateQty(item.id, -1)} className="h-7 w-7 p-1">
                                         <Minus className="w-3 h-3 text-gray-600" />
