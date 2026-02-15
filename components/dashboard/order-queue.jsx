@@ -1,6 +1,9 @@
 "use client";
 
-import { Eye, ChevronRight, Box, Clock } from "lucide-react";
+import { Eye, ChevronRight, Box } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function OrderQueue() {
     const orders = [
@@ -30,16 +33,16 @@ export function OrderQueue() {
         },
     ];
 
-    const getStatusColor = (status) => {
+    const getStatusVariant = (status) => {
         switch (status) {
             case "ready":
-                return "bg-emerald-100 text-emerald-700";
+                return "default";
             case "cooking":
-                return "bg-amber-100 text-amber-700";
+                return "secondary";
             case "canceled":
-                return "bg-red-100 text-red-700";
+                return "destructive";
             default:
-                return "bg-gray-100 text-gray-700";
+                return "outline";
         }
     };
 
@@ -57,41 +60,42 @@ export function OrderQueue() {
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800">Order queues</h2>
                 <div className="flex gap-2">
-                    <button className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500">
+                    <Button variant="outline" size="icon" className="border-gray-200 text-gray-500 hover:bg-gray-50">
                         <Eye className="w-5 h-5" />
-                    </button>
-                    <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-600 flex items-center gap-2">
+                    </Button>
+                    <Button variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-50">
+                        <ChevronRight className="w-4 h-4 mr-1" />
                         View All
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                 {orders.map((order, idx) => (
-                    <div key={idx} className="min-w-[300px] bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                            <span className="font-medium text-gray-500 text-sm">{order.id}</span>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                {getStatusLabel(order.status)}
-                            </span>
-                        </div>
-
-                        <div>
-                            <h3 className="font-bold text-gray-900">{order.customer}</h3>
-                            <p className="text-xs text-gray-400">{order.time}</p>
-                        </div>
-
-                        <div className="flex items-center gap-4 mt-1">
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
-                                <Box className="w-3.5 h-3.5" />
-                                <span>{order.items} Items</span>
+                    <Card key={idx} className="min-w-[300px] rounded-xl flex-shrink-0">
+                        <CardContent className="p-4 flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-gray-500 text-sm">{order.id}</span>
+                                <Badge variant={getStatusVariant(order.status)} className="px-3 py-1">
+                                    {getStatusLabel(order.status)}
+                                </Badge>
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
-                                <div className="w-3.5 h-3.5 border border-gray-400 rounded-sm"></div>
-                                <span>Table {order.table}</span>
+                            <div>
+                                <h3 className="font-bold text-gray-900">{order.customer}</h3>
+                                <p className="text-xs text-gray-400">{order.time}</p>
                             </div>
-                        </div>
-                    </div>
+                            <div className="flex items-center gap-4 mt-1">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
+                                    <Box className="w-3.5 h-3.5" />
+                                    <span>{order.items} Items</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-2 py-1 rounded-md">
+                                    <div className="w-3.5 h-3.5 border border-gray-400 rounded-sm"></div>
+                                    <span>Table {order.table}</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
         </div>

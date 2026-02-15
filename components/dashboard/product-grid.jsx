@@ -1,56 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { Search, SlidersHorizontal, Plus, Minus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export function ProductGrid() {
-    const categories = ["Appetizers", "Seafood platters", "Fish", "Shrimp", "Crab", "Squid", "Rice", "Drinks", "Dessert"];
+export function ProductGrid({ items }) {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All");
 
-    const products = [
-        {
-            id: 1,
-            name: "Spicy Shrimp Rice",
-            price: 8.99,
-            category: "Seafood",
-            image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 2,
-            name: "Garlic fried butter",
-            price: 8.99,
-            category: "Sweet chili",
-            image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 3,
-            name: "Thai hot seafood",
-            price: 8.99,
-            category: "Creamy",
-            image: "https://images.unsplash.com/photo-1548943487-a2e4e43b485c?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 4,
-            name: "Spicy Shrimp Rice",
-            price: 8.99,
-            category: "Seafood",
-            image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 5,
-            name: "Spicy Shrimp Rice",
-            price: 8.99,
-            category: "Seafood",
-            image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=400&q=80",
-        },
-        {
-            id: 6,
-            name: "Spicy Shrimp Rice",
-            price: 8.99,
-            category: "Seafood",
-            image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=400&q=80",
-        },
+    const defaultProducts = [
+        // ... (keep existing mocks if needed, but we rely on props mostly now)
     ];
+
+    const allProducts = items || defaultProducts;
+
+    // Derive unique categories from data
+    const categories = ["All", ...new Set(allProducts.map(product => product.category))];
+
+    const products = allProducts.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <div className="flex flex-col h-full">
@@ -62,6 +36,8 @@ export function ProductGrid() {
                         <Input
                             placeholder="Search for food"
                             className="pl-10 w-64 h-10 bg-white border-gray-200"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <Button variant="outline" className="h-10 px-3 bg-white border-gray-200">
@@ -73,45 +49,47 @@ export function ProductGrid() {
             {/* Categories */}
             <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2">
                 {categories.map((cat, idx) => (
-                    <button
+                    <Button
                         key={idx}
-                        className={`
-                    px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors
-                    ${idx === 0 ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}
-                `}
+                        variant={selectedCategory === cat ? "default" : "outline"}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`whitespace-nowrap rounded-full ${selectedCategory === cat ? "bg-emerald-600 text-white hover:bg-emerald-700 border-0" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                            }`}
                     >
                         {cat}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pr-2 pb-20">
-                {products.map((product) => (
-                    <div key={product.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-                        <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-gray-100">
-                            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                        </div>
-                        <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
-                        <div className="flex justify-between items-end mb-4">
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">$ {product.price} / serving</p>
-                                <p className="text-xs text-gray-400">{product.category}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3 mt-auto">
-                            <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
-                                <button className="p-1 hover:bg-white rounded-md transition-colors"><Minus className="w-4 h-4 text-gray-500" /></button>
-                                <span className="w-8 text-center text-sm font-medium text-gray-900">0</span>
-                                <button className="p-1 hover:bg-white rounded-md transition-colors"><Plus className="w-4 h-4 text-gray-500" /></button>
-                            </div>
-                            <button className="flex-1 bg-white border border-gray-200 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-50 transition-colors">
-                                Add to cart
-                            </button>
-                        </div>
-                    </div>
-                ))}
+            {/* Product Table */}
+            <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex flex-col">
+                <div className="overflow-y-auto flex-1 p-0">
+                    <Table>
+                        <TableHeader className="bg-gray-50 text-gray-700 font-semibold sticky top-0 z-10 shadow-sm">
+                            <TableRow>
+                                <TableHead className="px-6 py-4 w-2/3">Item</TableHead>
+                                <TableHead className="px-6 py-4 w-1/3 text-right">Price</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody className="divide-y divide-gray-100">
+                            {products.map((product) => (
+                                <TableRow key={product.id} className="hover:bg-gray-50/80 transition-colors group cursor-pointer">
+                                    <TableCell className="px-6 py-4 align-middle">
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-gray-800 text-base mb-1">{product.name}</span>
+                                            <span className="text-xs text-gray-500 inline-block bg-gray-100 px-2 py-0.5 rounded-full w-fit">
+                                                {product.category}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 text-right align-middle">
+                                        <span className="font-bold text-emerald-600 text-lg">Rs. {product.price}</span>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </div>
     );
