@@ -24,6 +24,15 @@ export function Sidebar() {
     const { user, logout } = useAuth();
     const pathname = usePathname();
 
+    const profile = {
+        name: user?.username ? user.username.split("@")[0] : "Staff Member",
+        email: user?.username ?? "staff@seefood.com",
+        role: user?.role ?? "staff",
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+            user?.username ?? "seefood"
+        )}`,
+    };
+
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", href: "/staff/dashboard" },
         { icon: ShoppingBag, label: "Orders", href: "/staff/orders" },
@@ -91,14 +100,15 @@ export function Sidebar() {
             <div className="p-4 border-t border-gray-100">
                 <Card className="bg-gray-50 border-0 shadow-none">
                     <CardContent className="p-4">
-                        <div className="text-xs text-gray-400 mb-3">Switch account</div>
+                        <div className="text-xs text-gray-400 mb-3">Active session</div>
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Antonio" alt="User" />
+                                <img src={profile.avatar} alt="User" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-sm font-medium text-gray-900 truncate">Antonio Erlangga</div>
-                                <div className="text-xs text-gray-400 truncate">antonioerl@gmail.com</div>
+                                <div className="text-sm font-medium text-gray-900 truncate">{profile.name}</div>
+                                <div className="text-xs text-gray-400 truncate">{profile.email}</div>
+                                <div className="text-[11px] text-gray-400 capitalize">{profile.role}</div>
                             </div>
                         </div>
                         <Button variant="outline" className="w-full py-2 bg-white border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 h-auto mb-3">

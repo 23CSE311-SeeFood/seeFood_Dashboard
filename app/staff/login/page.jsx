@@ -24,7 +24,6 @@ export default function LoginPage() {
         setTimeout(() => {
             login(selectedRole, email, password);
             setLoading(false);
-            alert(`Login Successful!\nRole: ${selectedRole}\nEmail: ${email}\n\n(Dashboard module is currently removed for this baseline)`);
         }, 800);
     };
 

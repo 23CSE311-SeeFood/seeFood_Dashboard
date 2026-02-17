@@ -7,14 +7,21 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [isInitialized, setIsInitialized] = useState(false);
     const router = useRouter();
 
     // Load session from localStorage on mount
     useEffect(() => {
         const savedSession = localStorage.getItem('seefood_session');
         if (savedSession) {
-            setUser(JSON.parse(savedSession));
+            try {
+                setUser(JSON.parse(savedSession));
+            } catch (error) {
+                console.warn("Invalid saved session. Clearing local session.", error);
+                localStorage.removeItem('seefood_session');
+            }
         }
+        setIsInitialized(true);
     }, []);
 
     const login = (role, email, password) => {
@@ -49,7 +56,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, isInitialized }}>
             {children}
         </AuthContext.Provider>
     );
