@@ -7,27 +7,35 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [isInitialized, setIsInitialized] = useState(false);
     const router = useRouter();
 
     // Load session from localStorage on mount
     useEffect(() => {
         const savedSession = localStorage.getItem('seefood_session');
         if (savedSession) {
-            setUser(JSON.parse(savedSession));
+            try {
+                setUser(JSON.parse(savedSession));
+            } catch (error) {
+                console.warn("Invalid saved session. Clearing local session.", error);
+                localStorage.removeItem('seefood_session');
+            }
         }
+        setIsInitialized(true);
     }, []);
 
-    const login = (role, email, password) => {
+    const login = ({ role, username, token, device = "TERM-01", shift = "MORNING-A" }) => {
         const session = {
             role, // 'admin', 'cashier', 'operator'
-            username: email, // Using email as the username/identifier
-            device: 'TERM-01', // Mock device ID
-            shift: 'MORNING-A', // Mock shift
+            username, // Using email as the username/identifier
+            token, // Auth token when provided by API
+            device,
+            shift,
             loginTimestamp: new Date().toISOString(),
         };
 
         // Audit Log (Console for now, or in-memory)
-        console.log(`[AUDIT] Login: ${email} as ${role} at ${session.loginTimestamp}`);
+        console.log(`[AUDIT] Login: ${username} as ${role} at ${session.loginTimestamp}`);
 
         setUser(session);
         localStorage.setItem('seefood_session', JSON.stringify(session));
@@ -49,7 +57,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, isInitialized }}>
             {children}
         </AuthContext.Provider>
     );

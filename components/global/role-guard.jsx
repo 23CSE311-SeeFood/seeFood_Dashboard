@@ -5,22 +5,23 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export function RoleGuard({ children, allowedRoles }) {
-    const { user } = useAuth();
+    const { user, isInitialized } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
+        if (!isInitialized) return;
         if (!user) {
-            router.push('/staff/login');
+            router.replace('/staff/login');
             return;
         }
 
         if (!allowedRoles.includes(user.role)) {
             alert("Unauthorized Access");
-            router.push('/staff/login');
+            router.replace('/staff/login');
         }
-    }, [user, allowedRoles, router]);
+    }, [user, allowedRoles, router, isInitialized]);
 
-    if (!user || !allowedRoles.includes(user.role)) {
+    if (!isInitialized || !user || !allowedRoles.includes(user.role)) {
         return null;
     }
 
