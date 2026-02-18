@@ -4,6 +4,7 @@ import {
     LayoutDashboard,
     ShoppingBag,
     ChefHat,
+    ClipboardPlus,
     FileText,
     Box,
     Users,
@@ -26,11 +27,11 @@ export function Sidebar() {
     const pathname = usePathname();
 
     const profile = {
-        name: user?.username ? user.username.split("@")[0] : "Staff Member",
-        email: user?.username ?? "staff@seefood.com",
+        name: user?.name || (user?.username ? user.username.split("@")[0] : "Staff Member"),
+        email: user?.email || user?.username || "staff@seefood.com",
         role: user?.role ?? "staff",
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-            user?.username ?? "seefood"
+            user?.email ?? user?.username ?? "seefood"
         )}`,
     };
 
@@ -38,11 +39,19 @@ export function Sidebar() {
         { icon: LayoutDashboard, label: "Dashboard", href: "/staff/dashboard" },
         { icon: ShoppingBag, label: "Orders", href: "/staff/orders" },
         { icon: ChefHat, label: "Menu Management", href: "/staff/menu" },
+        { icon: ClipboardPlus, label: "Add Item", href: "/staff/items" },
         { icon: UserPlus, label: "Register Cashier", href: "/staff/cashiers" },
         { icon: FileText, label: "Sales Reports", href: "/staff/sales" },
         { icon: Box, label: "Inventory Reports", href: "/staff/inventory" },
         { icon: Users, label: "Customer Directory", href: "/staff/customers" },
     ];
+
+    const visibleMenuItems =
+        user?.role === "cashier"
+            ? menuItems.filter((item) => ["/staff/dashboard", "/staff/orders"].includes(item.href))
+            : user?.role === "admin"
+                ? menuItems
+                : menuItems.filter((item) => item.href !== "/staff/items" && item.href !== "/staff/cashiers");
 
     return (
         <div className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col flex-shrink-0">
@@ -60,7 +69,7 @@ export function Sidebar() {
 
             {/* Navigation */}
             <div className="flex-1 overflow-y-auto px-4 space-y-1">
-                {menuItems.map((item, index) => {
+                {visibleMenuItems.map((item, index) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link

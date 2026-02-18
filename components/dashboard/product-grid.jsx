@@ -15,12 +15,17 @@ export function ProductGrid({ items }) {
         // ... (keep existing mocks if needed, but we rely on props mostly now)
     ];
 
-    const allProducts = items || defaultProducts;
+    const allProducts = (items || defaultProducts).map((product) => ({
+        ...product,
+        category:
+            product.category ||
+            (product.isVeg === true ? "Veg" : product.isVeg === false ? "Non-Veg" : "Other"),
+    }));
 
     // Derive unique categories from data
     const categories = ["All", ...new Set(allProducts.map(product => product.category))];
 
-    const products = allProducts.filter(product => {
+    const products = allProducts.filter((product) => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
         return matchesSearch && matchesCategory;

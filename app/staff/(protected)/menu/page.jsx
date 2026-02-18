@@ -1,22 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductGrid } from "@/components/dashboard/product-grid";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { menuItems } from "@/lib/menu-data";
+import { getCanteenItems, getCanteens } from "@/lib/api";
+import { useAuth } from "@/components/global/auth-provider";
 
 export default function MenuPage() {
-    const [activeSlot, setActiveSlot] = useState("Morning");
+    const [canteens, setCanteens] = useState([]);
+    const [selectedCanteenId, setSelectedCanteenId] = useState(null);
+    const [items, setItems] = useState([]);
+    const [loadingItems, setLoadingItems] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const { user } = useAuth();
 
-    const timeSlots = ["Morning", "Afternoon", "Evening", "Night"];
+    useEffect(() => {
+        let isActive = true;
+        const loadCanteens = async () => {
+            try {
+                const data = await getCanteens();
+                if (!isActive) return;
+                const canteenList = Array.isArray(data) ? data : [];
+                setCanteens(canteenList);
+                const defaultId = user?.canteenId ?? canteenList[0]?.id ?? null;
+                if (defaultId) {
+                    setSelectedCanteenId(defaultId);
+                }
+            } catch (error) {
+                if (isActive) {
+                    setErrorMessage(error.message || "Failed to load canteens.");
+                }
+            }
+        };
 
-    // Data imported from shared source
-    const allProducts = menuItems;
+        loadCanteens();
+        return () => {
+            isActive = false;
+        };
+    }, [user?.canteenId]);
 
-    const filteredProducts = allProducts.filter(product =>
-        product.timeSlots.includes(activeSlot)
-    );
+    useEffect(() => {
+        let isActive = true;
+        if (!selectedCanteenId) return;
+
+        const loadItems = async () => {
+            setLoadingItems(true);
+            setErrorMessage("");
+            try {
+                const data = await getCanteenItems(selectedCanteenId);
+                if (!isActive) return;
+                setItems(Array.isArray(data) ? data : []);
+            } catch (error) {
+                if (isActive) {
+                    setErrorMessage(error.message || "Failed to load items.");
+                }
+            } finally {
+                if (isActive) {
+                    setLoadingItems(false);
+                }
+            }
+        };
+
+        loadItems();
+        return () => {
+            isActive = false;
+        };
+    }, [selectedCanteenId]);
 
     return (
         <div className="flex w-full h-full p-8 overflow-hidden">
@@ -25,30 +74,43 @@ export default function MenuPage() {
                     <Card className="border-0 shadow-none bg-transparent">
                         <CardHeader className="p-0">
                             <CardTitle className="text-2xl text-gray-800">Menu Management</CardTitle>
-                            <CardDescription>View and manage all food items by time of day</CardDescription>
+                            <CardDescription>View and manage items for each canteen</CardDescription>
                         </CardHeader>
                     </Card>
 
-                    {/* Time Slot Tabs */}
-                    <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-max">
-                        {timeSlots.map((slot) => (
-                            <Button
-                                key={slot}
-                                onClick={() => setActiveSlot(slot)}
-                                variant="ghost"
-                                className={`px-6 py-2 rounded-md transition-all ${activeSlot === slot
-                                    ? "bg-white text-[#B1464A] shadow-sm font-bold"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
-                                    }`}
+                    {canteens.length > 0 ? (
+                        <div className="flex items-center gap-3">
+                            <label htmlFor="menu-canteen" className="text-sm text-gray-500">
+                                Canteen
+                            </label>
+                            <select
+                                id="menu-canteen"
+                                value={selectedCanteenId ?? ""}
+                                onChange={(event) => {
+                                    const value = event.target.value;
+                                    setSelectedCanteenId(value ? Number(value) : null);
+                                }}
+                                className="h-10 rounded-md border border-input bg-white px-3 text-sm"
+                                disabled={Boolean(user?.canteenId)}
                             >
-                                {slot}
-                            </Button>
-                        ))}
-                    </div>
+                                {canteens.map((canteen) => (
+                                    <option key={canteen.id} value={canteen.id}>
+                                        {canteen.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : null}
                 </div>
 
                 <div className="flex-1 min-h-0">
-                    <ProductGrid items={filteredProducts} />
+                    {errorMessage ? (
+                        <div className="text-sm text-red-600 mb-2">{errorMessage}</div>
+                    ) : null}
+                    <ProductGrid items={items} />
+                    {loadingItems ? (
+                        <div className="text-xs text-gray-400 mt-2">Loading items...</div>
+                    ) : null}
                 </div>
             </div>
         </div>

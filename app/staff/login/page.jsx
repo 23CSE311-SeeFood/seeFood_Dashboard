@@ -40,6 +40,13 @@ export default function LoginPage() {
         );
     };
 
+    const resolveProfile = (data, role) => {
+        if (!data || typeof data !== "object") return {};
+        if (role === "admin") return data.admin || {};
+        if (role === "cashier") return data.cashier || {};
+        return {};
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
         if (!email || !password) return;
@@ -71,7 +78,17 @@ export default function LoginPage() {
                     throw new Error("Login succeeded but no token was returned.");
                 }
 
-                login({ role: selectedRole, username: email, token });
+                const profile = resolveProfile(data, selectedRole);
+
+                login({
+                    role: selectedRole,
+                    id: profile.id,
+                    username: profile.email || email,
+                    name: profile.name || email,
+                    email: profile.email || email,
+                    token,
+                    canteenId: profile.canteenId,
+                });
             } catch (error) {
                 setErrorMessage(error.message || "Login failed. Please try again.");
             } finally {
@@ -81,7 +98,7 @@ export default function LoginPage() {
         }
 
         setTimeout(() => {
-            login({ role: selectedRole, username: email });
+            login({ role: selectedRole, username: email, name: email, email });
             setLoading(false);
         }, 800);
     };

@@ -24,11 +24,25 @@ export function AuthProvider({ children }) {
         setIsInitialized(true);
     }, []);
 
-    const login = ({ role, username, token, device = "TERM-01", shift = "MORNING-A" }) => {
+    const login = ({
+        role,
+        id,
+        username,
+        name,
+        email,
+        token,
+        canteenId,
+        device = "TERM-01",
+        shift = "MORNING-A",
+    }) => {
         const session = {
             role, // 'admin', 'cashier', 'operator'
+            id,
             username, // Using email as the username/identifier
+            name,
+            email,
             token, // Auth token when provided by API
+            canteenId,
             device,
             shift,
             loginTimestamp: new Date().toISOString(),

@@ -1,16 +1,131 @@
 "use client";
 
+import { useState } from "react";
 import { Trash2, Plus, Minus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
+import { createOrder, verifyOrder } from "@/lib/api";
+import { useAuth } from "@/components/global/auth-provider";
 
-export function ActiveOrder({ items = [], onUpdateQty, onRemove }) {
+let razorpayScriptPromise;
+const loadRazorpayScript = () => {
+    if (razorpayScriptPromise) return razorpayScriptPromise;
+    razorpayScriptPromise = new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+    return razorpayScriptPromise;
+};
+
+export function ActiveOrder({ items = [], onUpdateQty, onRemove, onSuccess }) {
     // Calculated total
     // Mock conversion 15000 for display consistency with OrderEntry if items only have USD price, 
     // but let's assume items coming in might have 'price' in USD, we need consistent currency.
     // OrderEntry had `item.price * 15000`. Let's assume passed items have the base price.
 
+    const { user } = useAuth();
+    const [isPaying, setIsPaying] = useState(false);
+    const [paymentError, setPaymentError] = useState("");
+    const [paymentSuccess, setPaymentSuccess] = useState("");
+
     const total = items.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+    const resolveOrderMeta = (data) => {
+        if (!data || typeof data !== "object") return {};
+        return {
+            orderId:
+                data.order_id ||
+                data.orderId ||
+                data.id ||
+                data?.order?.id ||
+                data?.razorpayOrderId,
+            amount: data.amount || data.amount_due || data.amountDue,
+            currency: data.currency || "INR",
+        };
+    };
+
+    const handlePayment = async () => {
+        if (items.length === 0 || isPaying) return;
+        setPaymentError("");
+        setPaymentSuccess("");
+
+        if (user?.role !== "cashier" || !user?.id) {
+            setPaymentError("Please log in as a cashier to place orders.");
+            return;
+        }
+
+        setIsPaying(true);
+
+        try {
+            const orderPayload = {
+                cashierId: user.id,
+                items: items.map((item) => ({
+                    canteenItemId: item.id,
+                    quantity: item.qty,
+                })),
+            };
+
+            const orderData = await createOrder(orderPayload);
+            const { orderId, amount, currency } = resolveOrderMeta(orderData);
+
+            if (!orderId) {
+                throw new Error("Order ID not returned by server.");
+            }
+            const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+            if (!key) {
+                throw new Error("Missing Razorpay key. Set NEXT_PUBLIC_RAZORPAY_KEY_ID.");
+            }
+
+            const loaded = await loadRazorpayScript();
+            if (!loaded || !window.Razorpay) {
+                throw new Error("Failed to load Razorpay checkout.");
+            }
+
+            const options = {
+                key,
+                amount: amount ?? Math.round(total * 100),
+                currency: currency || "INR",
+                name: "SeeFood",
+                description: "Canteen order payment",
+                order_id: orderId,
+                handler: async (response) => {
+                    try {
+                        await verifyOrder({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                        });
+                        setPaymentSuccess("Payment verified successfully.");
+                        if (onSuccess) {
+                            onSuccess();
+                        }
+                    } catch (error) {
+                        setPaymentError(error.message || "Payment verification failed.");
+                    } finally {
+                        setIsPaying(false);
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        setIsPaying(false);
+                    },
+                },
+                theme: {
+                    color: "#B1464A",
+                },
+            };
+
+            const razorpay = new window.Razorpay(options);
+            razorpay.open();
+        } catch (error) {
+            setPaymentError(error.message || "Payment failed. Please try again.");
+            setIsPaying(false);
+        }
+    };
 
     return (
         <Card className="w-80 border-l border-gray-100 flex flex-col h-full shadow-sm rounded-none">
@@ -55,10 +170,20 @@ export function ActiveOrder({ items = [], onUpdateQty, onRemove }) {
                     <span className="text-sm text-gray-500">Total</span>
                     <span className="text-lg font-bold text-gray-900">Rs.{total.toLocaleString()}</span>
                 </div>
-                <Button disabled={items.length === 0} className="w-full bg-[#B1464A] hover:bg-[#963c3f] text-white font-bold h-10 rounded-lg flex items-center gap-2">
-                    <span>Place Order</span>
+                <Button
+                    disabled={items.length === 0 || isPaying}
+                    onClick={handlePayment}
+                    className="w-full bg-[#B1464A] hover:bg-[#963c3f] text-white font-bold h-10 rounded-lg flex items-center gap-2"
+                >
+                    <span>{isPaying ? "Processing..." : "Proceed to Payment"}</span>
                     <Send className="w-4 h-4" />
                 </Button>
+                {paymentError ? (
+                    <div className="text-xs text-red-600 mt-2">{paymentError}</div>
+                ) : null}
+                {paymentSuccess ? (
+                    <div className="text-xs text-emerald-600 mt-2">{paymentSuccess}</div>
+                ) : null}
             </CardFooter>
         </Card>
     );

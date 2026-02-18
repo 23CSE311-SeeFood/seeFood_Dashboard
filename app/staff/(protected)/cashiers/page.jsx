@@ -1,22 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RoleGuard } from "@/components/global/role-guard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getCanteens, registerCashier } from "@/lib/api";
 
 export default function RegisterCashierPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [canteenId, setCanteenId] = useState("1");
+    const [canteens, setCanteens] = useState([]);
+    const [canteenId, setCanteenId] = useState("");
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [loadingCanteens, setLoadingCanteens] = useState(false);
 
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+    useEffect(() => {
+        let isActive = true;
+        const loadCanteens = async () => {
+            setLoadingCanteens(true);
+            try {
+                const data = await getCanteens();
+                if (!isActive) return;
+                setCanteens(Array.isArray(data) ? data : []);
+                if (!canteenId && Array.isArray(data) && data.length > 0) {
+                    setCanteenId(String(data[0].id));
+                }
+            } catch (error) {
+                if (isActive) {
+                    setErrorMessage(error.message || "Failed to load canteens.");
+                }
+            } finally {
+                if (isActive) {
+                    setLoadingCanteens(false);
+                }
+            }
+        };
+
+        loadCanteens();
+        return () => {
+            isActive = false;
+        };
+    }, []);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -30,28 +59,12 @@ export default function RegisterCashierPage() {
 
         setLoading(true);
         try {
-            const response = await fetch(`${apiBaseUrl}/auth/cashier/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    password,
-                    canteenId: Number(canteenId),
-                }),
+            await registerCashier({
+                name,
+                email,
+                password,
+                canteenId: Number(canteenId),
             });
-
-            if (!response.ok) {
-                let message = "Registration failed. Please try again.";
-                try {
-                    const errorData = await response.json();
-                    message = errorData?.message || errorData?.error || message;
-                } catch {
-                    // ignore parse errors
-                }
-                throw new Error(message);
-            }
-
             setSuccessMessage("Cashier registered successfully.");
             setName("");
             setEmail("");
@@ -104,16 +117,31 @@ export default function RegisterCashierPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="cashier-canteen">Canteen ID</Label>
-                                <Input
-                                    id="cashier-canteen"
-                                    type="number"
-                                    min="1"
-                                    value={canteenId}
-                                    onChange={(event) => setCanteenId(event.target.value)}
-                                />
+                                <div className="space-y-2">
+                                    <select
+                                        id="cashier-canteen"
+                                        value={canteenId}
+                                        onChange={(event) => setCanteenId(event.target.value)}
+                                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                        disabled={loadingCanteens}
+                                    >
+                                        {canteens.length === 0 ? (
+                                            <option value="">No canteens available</option>
+                                        ) : (
+                                            canteens.map((canteen) => (
+                                                <option key={canteen.id} value={canteen.id}>
+                                                    {canteen.name}
+                                                </option>
+                                            ))
+                                        )}
+                                    </select>
+                                    {loadingCanteens ? (
+                                        <div className="text-xs text-gray-400">Loading canteens...</div>
+                                    ) : null}
+                                </div>
                             </div>
 
-                            <Button type="submit" disabled={loading} className="w-full">
+                            <Button type="submit" disabled={loading || loadingCanteens || !canteenId} className="w-full">
                                 {loading ? "Registering..." : "Register Cashier"}
                             </Button>
 

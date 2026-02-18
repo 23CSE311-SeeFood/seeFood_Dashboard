@@ -6,17 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { menuItems } from "@/lib/menu-data";
-
-export function OrderEntry({ onAdd }) {
+export function OrderEntry({ onAdd, items = [] }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
 
     // Filter available items
-    const items = menuItems;
-
-    const filteredItems = items.filter(item =>
+    const filteredItems = items.filter((item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
