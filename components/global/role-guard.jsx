@@ -11,13 +11,13 @@ export function RoleGuard({ children, allowedRoles }) {
     useEffect(() => {
         if (!isInitialized) return;
         if (!user) {
-            router.push('/staff/login');
+            router.replace('/staff/login');
             return;
         }
 
         if (!allowedRoles.includes(user.role)) {
             alert("Unauthorized Access");
-            router.push('/staff/login');
+            router.replace('/staff/login');
         }
     }, [user, allowedRoles, router, isInitialized]);
 

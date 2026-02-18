@@ -1,28 +1,87 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/global/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Shield, CreditCard, User, Utensils } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, user, isInitialized } = useAuth();
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [selectedRole, setSelectedRole] = useState('operator');
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        if (!isInitialized) return;
+        if (user) {
+            const destination = user.role === "cashier" ? "/staff/orders" : "/staff/dashboard";
+            router.replace(destination);
+        }
+    }, [user, isInitialized, router]);
+
+    const resolveToken = (data) => {
+        if (!data || typeof data !== "object") return null;
+        return (
+            data.token ||
+            data.accessToken ||
+            data.authToken ||
+            data?.data?.token ||
+            data?.data?.accessToken ||
+            null
+        );
+    };
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         if (!email || !password) return;
         setLoading(true);
+        setErrorMessage('');
+
+        if (selectedRole === "admin" || selectedRole === "cashier") {
+            try {
+                const response = await fetch(`${apiBaseUrl}/auth/${selectedRole}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                if (!response.ok) {
+                    let message = "Login failed. Please check your credentials.";
+                    try {
+                        const errorData = await response.json();
+                        message = errorData?.message || errorData?.error || message;
+                    } catch {
+                        // ignore parse errors
+                    }
+                    throw new Error(message);
+                }
+
+                const data = await response.json();
+                const token = resolveToken(data);
+                if (!token) {
+                    throw new Error("Login succeeded but no token was returned.");
+                }
+
+                login({ role: selectedRole, username: email, token });
+            } catch (error) {
+                setErrorMessage(error.message || "Login failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
 
         setTimeout(() => {
-            login(selectedRole, email, password);
+            login({ role: selectedRole, username: email });
             setLoading(false);
         }, 800);
     };
@@ -32,6 +91,10 @@ export default function LoginPage() {
         { id: 'cashier', label: 'Cashier', icon: CreditCard },
         { id: 'operator', label: 'Operator', icon: User },
     ];
+
+    if (isInitialized && user) {
+        return null;
+    }
 
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-gray-50/50 p-4">
@@ -100,6 +163,9 @@ export default function LoginPage() {
                         >
                             {loading ? "Authenticating..." : "Sign in to Dashboard"}
                         </Button>
+                        {errorMessage ? (
+                            <div className="text-sm text-red-600 text-center">{errorMessage}</div>
+                        ) : null}
                     </form>
                 </CardContent>
             </Card>

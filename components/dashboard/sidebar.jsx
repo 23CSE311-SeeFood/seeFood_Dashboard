@@ -7,6 +7,7 @@ import {
     FileText,
     Box,
     Users,
+    UserPlus,
     Settings,
     HelpCircle,
     Plus
@@ -37,6 +38,7 @@ export function Sidebar() {
         { icon: LayoutDashboard, label: "Dashboard", href: "/staff/dashboard" },
         { icon: ShoppingBag, label: "Orders", href: "/staff/orders" },
         { icon: ChefHat, label: "Menu Management", href: "/staff/menu" },
+        { icon: UserPlus, label: "Register Cashier", href: "/staff/cashiers" },
         { icon: FileText, label: "Sales Reports", href: "/staff/sales" },
         { icon: Box, label: "Inventory Reports", href: "/staff/inventory" },
         { icon: Users, label: "Customer Directory", href: "/staff/customers" },
