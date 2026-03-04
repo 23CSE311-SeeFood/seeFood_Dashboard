@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CAFE Operator Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --crimson:#B1464A; --black:#000200; --white:#FFFFFF; --rose:#BD6467; --fog:#F9F9F9;
+    --s1:#0d0d0d; --s2:#111; --border:#1f1f1f; --muted:#444; --dim:#888;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Mono',monospace;background:var(--black);color:var(--white);display:flex;min-height:100vh;font-size:13px;}
+  a{text-decoration:none;color:inherit;}
+
+  /* SIDEBAR */
+  .sidebar{width:224px;background:#060606;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+  .s-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
+  .s-logo .brand{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--crimson);}
+  .s-logo .sub{font-size:9px;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-top:2px;}
+  .s-live{display:flex;align-items:center;gap:7px;padding:10px 20px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#5dbb8e;border-bottom:1px solid var(--border);}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#5dbb8e;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(93,187,142,0.6);}50%{opacity:0.8;box-shadow:0 0 0 6px rgba(93,187,142,0);}}
+  .s-back{display:flex;align-items:center;gap:7px;padding:10px 20px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#3a3a3a;border-bottom:1px solid var(--border);transition:color 0.15s;cursor:pointer;}
+  .s-back:hover{color:var(--dim);}
+  .nav-sec{font-size:9px;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;padding:16px 20px 5px;}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:9px 20px;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;color:var(--dim);border-left:2px solid transparent;transition:all 0.14s;user-select:none;}
+  .nav-item:hover{color:var(--white);background:#0f0f0f;}
+  .nav-item.active{color:var(--white);background:rgba(177,70,74,0.09);border-left:2px solid var(--crimson);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.5;flex-shrink:0;}
+
+  /* OCCUPANCY SIDEBAR WIDGET */
+  .occ-widget{margin:16px 14px;background:var(--s1);border:1px solid var(--border);border-radius:7px;padding:14px;}
+  .occ-title{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .occ-ring-wrap{display:flex;justify-content:center;margin-bottom:10px;}
+  .occ-count{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
+  .occ-sub{font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
+  .occ-bar-bg{height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden;margin-top:8px;}
+  .occ-bar-fill{height:100%;border-radius:3px;transition:width 0.4s,background 0.3s;}
+
+  /* MAIN */
+  .main{margin-left:224px;flex:1;padding:36px 36px 70px;min-height:100vh;}
+
+  /* SECTION */
+  .section{display:none;animation:fadeUp 0.22s ease both;}
+  .section.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .ph{margin-bottom:28px;}
+  .pt{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.02em;}
+  .ps{font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:4px;}
+
+  /* CARD */
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:22px;margin-bottom:18px;}
+  .ct{font-size:9.5px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--rose);margin-bottom:16px;display:flex;align-items:center;gap:7px;}
+  .ct::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--crimson);flex-shrink:0;}
+
+  /* GRIDS */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+
+  /* STAT */
+  .stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+  .sv{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+  .sl{font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:7px;}
+  .sd{font-size:10px;margin-top:5px;}.sd.up{color:#5dbb8e;}.sd.dn{color:var(--crimson);}
+
+  /* FORM */
+  label{font-size:9.5px;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:5px;}
+  input,select,textarea{width:100%;background:#151515;border:1px solid #272727;border-radius:5px;color:var(--white);padding:9px 12px;font-size:12px;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.15s;margin-bottom:14px;}
+  input:focus,select:focus,textarea:focus{border-color:var(--crimson);}
+  select option{background:#151515;}
+  .frow{margin-bottom:14px;}
+  .frow label{margin-bottom:5px;}
+  .frow input,.frow select{margin-bottom:0;}
+
+  /* BTN */
+  .btn{padding:8px 20px;border-radius:5px;border:none;cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;transition:opacity 0.15s,transform 0.1s;}
+  .btn:active{transform:scale(0.97);}
+  .btn-p{background:var(--crimson);color:var(--white);}
+  .btn-p:hover{opacity:0.84;}
+  .btn-g{background:transparent;color:var(--dim);border:1px solid var(--border);}
+  .btn-g:hover{color:var(--white);border-color:#333;}
+  .btn-green{background:#0e2a1a;color:#5dbb8e;border:1px solid #1a4030;}
+  .btn-green:hover{background:#142e20;}
+  .btn-amber{background:#1c1600;color:#c9a227;border:1px solid #342a00;}
+  .btn-amber:hover{background:#221900;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* TABLE */
+  .tbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .tbl thead th{text-align:left;padding:7px 13px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+  .tbl tbody tr{transition:background 0.1s;}
+  .tbl tbody tr:hover{background:#0f0f0f;}
+  .tbl tbody td{padding:10px 13px;border-bottom:1px solid #0d0d0d;color:#bbb;}
+
+  /* BADGES */
+  .b{display:inline-block;padding:2px 9px;border-radius:3px;font-size:9.5px;letter-spacing:0.05em;font-weight:500;}
+  .bg{background:#0a2018;color:#5dbb8e;border:1px solid #153028;}
+  .br{background:#1e0d0d;color:var(--rose);border:1px solid #3a1818;}
+  .ba{background:#1c1600;color:#c9a227;border:1px solid #342a00;}
+  .bb{background:#0a1620;color:#6aadda;border:1px solid #153048;}
+
+  /* ── QUEUE ────────────────────────────── */
+  .queue-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .now-serving{background:linear-gradient(135deg,#1a0a0b,#200d0e);border:1px solid rgba(177,70,74,0.5);border-radius:10px;padding:24px 28px;text-align:center;position:relative;overflow:hidden;}
+  .now-serving::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--crimson),transparent);}
+  .ns-label{font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .ns-token{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;color:var(--white);line-height:1;letter-spacing:-0.02em;}
+  .ns-name{font-size:13px;color:var(--dim);margin-top:6px;}
+  .ns-slot{font-size:11px;color:var(--rose);margin-top:3px;}
+  .ns-timer{font-size:12px;color:var(--muted);margin-top:8px;}
+  .ns-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+
+  /* QUEUE LIST */
+  .queue-list{display:flex;flex-direction:column;gap:0;}
+  .queue-item{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid #0d0d0d;transition:background 0.1s;cursor:pointer;}
+  .queue-item:hover{background:#0f0f0f;}
+  .queue-item.selected{background:rgba(177,70,74,0.07);border-left:2px solid var(--crimson);}
+  .qi-pos{width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;font-family:'Syne',sans-serif;font-weight:700;}
+  .qi-pos.top3{background:rgba(177,70,74,0.15);border-color:rgba(177,70,74,0.4);color:var(--white);}
+  .qi-token{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--white);flex-shrink:0;width:72px;}
+  .qi-name{font-size:11px;color:var(--dim);flex:1;}
+  .qi-slot{font-size:11px;color:var(--rose);flex-shrink:0;}
+  .qi-time{font-size:10px;color:var(--muted);flex-shrink:0;}
+  .qi-status{flex-shrink:0;}
+  .qi-actions{display:flex;gap:6px;flex-shrink:0;}
+
+  /* EXPIRY CONTROL */
+  .expiry-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #0d0d0d;}
+  .expiry-item:last-child{border-bottom:none;}
+  .ei-token{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--white);width:72px;}
+  .ei-info{flex:1;}
+  .ei-name{font-size:11px;color:var(--dim);}
+  .ei-exp{font-size:10px;color:var(--crimson);margin-top:2px;}
+  .ei-actions{display:flex;gap:7px;}
+  .countdown{display:inline-block;font-size:11px;color:var(--crimson);background:rgba(177,70,74,0.1);border:1px solid rgba(177,70,74,0.3);padding:2px 8px;border-radius:3px;}
+
+  /* OVERLOAD */
+  .overload-banner{background:linear-gradient(135deg,#1e0d0d,#250e0e);border:1px solid rgba(177,70,74,0.6);border-radius:8px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px;}
+  .overload-banner.hidden{display:none;}
+  .ob-icon{font-size:22px;flex-shrink:0;}
+  .ob-title{font-size:13px;font-weight:500;color:var(--white);}
+  .ob-sub{font-size:10px;color:var(--dim);margin-top:2px;}
+  .ob-action{margin-left:auto;}
+
+  /* OVERRIDE MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:10px;padding:32px;width:480px;max-width:95vw;position:relative;animation:modalIn 0.2s ease;}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+  .modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px;}
+  .modal-sub{font-size:11px;color:var(--muted);margin-bottom:22px;}
+  .modal-close{position:absolute;top:18px;right:18px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;line-height:1;}
+  .modal-close:hover{color:var(--white);}
+
+  /* ACTIVITY LOG */
+  .act-item{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid #0c0c0c;align-items:flex-start;}
+  .act-item:last-child{border-bottom:none;}
+  .act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+  .act-op{font-size:11px;color:var(--dim);flex-shrink:0;width:86px;}
+  .act-msg{font-size:11.5px;color:#ccc;flex:1;line-height:1.5;}
+  .act-time{font-size:10px;color:var(--muted);flex-shrink:0;}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+
+  @media(max-width:900px){.g3,.g4{grid-template-columns:1fr 1fr;}}
+  @media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr;}.sidebar{display:none;}.main{margin-left:0;}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="brand">CAFE</div>
+    <div class="sub">Operator Console</div>
+  </div>
+  <div class="s-live"><div class="live-dot"></div>Live Session Active</div>
+  <a class="s-back" href="index.html">← Back to Home</a>
+
+  <div class="nav-sec">Queue</div>
+  <div class="nav-item active" onclick="nav('queue')"><span class="dot"></span>Live Queue</div>
+  <div class="nav-item" onclick="nav('expiry')"><span class="dot"></span>Expiry / Skip Control</div>
+  <div class="nav-item" onclick="nav('override')"><span class="dot"></span>Manual Override</div>
+
+  <div class="nav-sec">Monitoring</div>
+  <div class="nav-item" onclick="nav('occupancy')"><span class="dot"></span>Occupancy Monitor</div>
+  <div class="nav-item" onclick="nav('actlog')"><span class="dot"></span>Operator Activity Log</div>
+
+  <!-- Live Occupancy Widget -->
+  <div class="occ-widget">
+    <div class="occ-title">Current Occupancy</div>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <div class="occ-count" id="sb-occ">62</div>
+      <div class="occ-sub">/ 80</div>
+    </div>
+    <div class="occ-bar-bg"><div class="occ-bar-fill" id="sb-bar" style="width:77%;background:var(--crimson);"></div></div>
+    <div style="font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:0.08em;">77% — Near Full</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- OVERLOAD BANNER -->
+  <div class="overload-banner" id="overload-banner">
+    <div class="ob-icon">⚠️</div>
+    <div><div class="ob-title">Overload Warning — Current slot near capacity</div><div class="ob-sub">62/80 occupied · 12:00–12:30 slot · 3 tokens expiring in &lt;2 min</div></div>
+    <div class="ob-action"><button class="btn btn-p" onclick="openOverride()">Manage</button></div>
+  </div>
+
+  <!-- ① LIVE QUEUE -->
+  <div class="section active" id="s-queue">
+    <div class="ph"><div class="pt">Live Queue</div><div class="ps">Real-time token queue — Slot 12:00–12:30</div></div>
+
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv" id="q-waiting">18</div><div class="sl">Waiting</div><div class="sd">In queue</div></div>
+      <div class="stat"><div class="sv" id="q-serving">3</div><div class="sl">Being Served</div><div class="sd">At counter</div></div>
+      <div class="stat"><div class="sv" id="q-served">47</div><div class="sl">Served Today</div><div class="sd up">↑ 12 vs yesterday</div></div>
+      <div class="stat"><div class="sv" id="q-skipped">4</div><div class="sl">Skipped / Expired</div><div class="sd dn">2 no-shows</div></div>
+    </div>
+
+    <!-- Now Serving -->
+    <div class="g2" style="margin-bottom:18px;">
+      <div class="now-serving">
+        <div class="ns-label">Now Serving</div>
+        <div class="ns-token" id="ns-token">T-042</div>
+        <div class="ns-name" id="ns-name">Priya Ramachandran</div>
+        <div class="ns-slot">12:00–12:30 · Counter A</div>
+        <div class="ns-timer">Serving for <span id="ns-timer">02:14</span></div>
+        <div class="ns-actions">
+          <button class="btn btn-green" onclick="markServed()">✓ Mark as Served</button>
+          <button class="btn btn-amber" onclick="callNext()">Skip → Next</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-p" style="width:100%;padding:12px;font-size:11px;" onclick="callNext()">📢 Call Next Token</button>
+          <button class="btn btn-amber" style="width:100%;padding:12px;font-size:11px;" onclick="openOverride()">⚙ Manual Override / Select Token</button>
+          <button class="btn btn-g" style="width:100%;padding:12px;font-size:11px;" onclick="nav('expiry')">⏱ Manage Expiring Tokens</button>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;text-align:center;padding:10px;background:#111;border:1px solid var(--border);border-radius:5px;">
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Avg Wait</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-top:2px;">4:32</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:10px;background:#111;border:1px solid var(--border);border-radius:5px;">
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Avg Serve</div>
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-top:2px;">2:18</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Queue List -->
+    <div class="card">
+      <div class="ct">Token Queue — Ordered</div>
+      <div class="queue-list" id="queue-list"></div>
+    </div>
+  </div>
+
+  <!-- ② EXPIRY / SKIP -->
+  <div class="section" id="s-expiry">
+    <div class="ph"><div class="pt">Expiry / Skip Control</div><div class="ps">Manage token expiry, grace periods and skip actions</div></div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Expiry Configuration</div>
+        <div class="frow"><label>Token Expiry Timeout (minutes)</label><input type="number" value="5" min="1"/></div>
+        <div class="frow"><label>Grace Period After Call (seconds)</label><input type="number" value="30" min="0"/></div>
+        <div class="frow"><label>Auto-Skip After Timeout</label>
+          <select><option value="skip">Skip &amp; Call Next</option><option value="waitlist">Move to Waitlist</option><option value="hold">Hold for 1 Round</option></select>
+        </div>
+        <div class="frow"><label>Max Re-queues Per Token</label><input type="number" value="2" min="0"/></div>
+        <div class="btn-row"><button class="btn btn-p">Save Config</button></div>
+      </div>
+      <div class="card">
+        <div class="ct">Tokens Expiring Soon</div>
+        <div id="expiry-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Skip Log — Today</div>
+      <table class="tbl">
+        <thead><tr><th>Token</th><th>User</th><th>Reason</th><th>Time</th><th>Outcome</th></tr></thead>
+        <tbody>
+          <tr><td>T-039</td><td>user_4821</td><td>Timeout expired</td><td>11:48</td><td><span class="b ba">Re-queued</span></td></tr>
+          <tr><td>T-034</td><td>user_2209</td><td>Manual skip</td><td>11:32</td><td><span class="b bb">Waitlisted</span></td></tr>
+          <tr><td>T-031</td><td>user_9981</td><td>No-show</td><td>11:15</td><td><span class="b br">Removed</span></td></tr>
+          <tr><td>T-028</td><td>user_0042</td><td>Timeout expired</td><td>10:59</td><td><span class="b br">Removed</span></td></tr>
+          <tr><td>T-022</td><td>user_7731</td><td>User request</td><td>10:42</td><td><span class="b ba">Re-queued</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ③ MANUAL OVERRIDE -->
+  <div class="section" id="s-override">
+    <div class="ph"><div class="pt">Manual Override</div><div class="ps">Admin-level queue management and token control</div></div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Select &amp; Serve Specific Token</div>
+        <div class="frow"><label>Search Token / User</label><input placeholder="Enter token ID or username..."/></div>
+        <div class="frow"><label>Or Select from Queue</label>
+          <select>
+            <option>T-043 — Arjun Mehta (12:00 slot)</option>
+            <option>T-044 — Sneha Patel (12:30 slot)</option>
+            <option>T-045 — Rahul Sharma (12:00 slot)</option>
+            <option>T-046 — Divya Krishnan (13:00 slot)</option>
+            <option>T-047 — Karan Nair (12:30 slot)</option>
+          </select>
+        </div>
+        <div class="frow"><label>Override Reason</label>
+          <select>
+            <option>Medical / Emergency Priority</option>
+            <option>Special needs accommodation</option>
+            <option>System error correction</option>
+            <option>Faculty / Senior priority</option>
+            <option>Operator discretion</option>
+          </select>
+        </div>
+        <div class="frow"><label>Operator Notes</label><input type="text" placeholder="Brief note for audit log..." style="margin:0;"/></div>
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="btn btn-p" onclick="logOverride()">Apply Override &amp; Serve</button>
+          <button class="btn btn-g">Clear</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ct">Override Actions Panel</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="background:#111;border:1px solid var(--border);border-radius:6px;padding:14px;">
+            <div style="font-size:11px;color:var(--white);font-weight:500;margin-bottom:6px;">🚨 Pause Queue</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">Temporarily stop token calling — no new serving until resumed.</div>
+            <button class="btn btn-amber" id="pause-btn" onclick="togglePause()">Pause Queue</button>
+          </div>
+          <div style="background:#111;border:1px solid var(--border);border-radius:6px;padding:14px;">
+            <div style="font-size:11px;color:var(--white);font-weight:500;margin-bottom:6px;">🔄 Reset Current Slot</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">Clear all serving tokens for current slot and restart the queue.</div>
+            <button class="btn btn-g" onclick="if(confirm('Reset current slot queue?'))alert('Slot queue reset.')">Reset Slot</button>
+          </div>
+          <div style="background:#111;border:1px solid var(--border);border-radius:6px;padding:14px;">
+            <div style="font-size:11px;color:var(--white);font-weight:500;margin-bottom:6px;">📋 Promote from Waitlist</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">Manually promote top waitlist token to active queue.</div>
+            <button class="btn btn-green" onclick="alert('Top waitlist token promoted.')">Promote Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Recent Override History</div>
+      <table class="tbl">
+        <thead><tr><th>Token</th><th>Operator</th><th>Action</th><th>Reason</th><th>Time</th></tr></thead>
+        <tbody id="override-log">
+          <tr><td>T-038</td><td>Op. Venkat</td><td><span class="b bb">Priority Serve</span></td><td>Medical emergency</td><td>11:52</td></tr>
+          <tr><td>T-031</td><td>Op. Meera</td><td><span class="b ba">Queue Paused</span></td><td>Counter maintenance</td><td>11:15</td></tr>
+          <tr><td>T-027</td><td>Op. Venkat</td><td><span class="b bg">Waitlist Promoted</span></td><td>No-show removal</td><td>10:58</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ④ OCCUPANCY MONITOR -->
+  <div class="section" id="s-occupancy">
+    <div class="ph"><div class="pt">Occupancy Monitor</div><div class="ps">Real-time cafeteria occupancy and counter load</div></div>
+
+    <!-- Big occupancy display -->
+    <div class="card" style="text-align:center;padding:36px;">
+      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Current Occupancy</div>
+      <div style="display:flex;align-items:baseline;justify-content:center;gap:12px;margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-size:80px;font-weight:800;color:var(--white);line-height:1;" id="occ-big">62</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:32px;color:var(--muted);">/ 80</div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;">Capacity</div>
+        </div>
+      </div>
+      <div style="max-width:400px;margin:0 auto;">
+        <div style="height:12px;background:#1a1a1a;border-radius:6px;overflow:hidden;">
+          <div id="occ-big-bar" style="height:100%;border-radius:6px;width:77%;background:var(--crimson);transition:width 0.5s,background 0.3s;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--rose);margin-top:8px;">77% — Near Full — Warning Active</div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;">
+        <button class="btn btn-green" onclick="changeOcc(-5)">− 5 Exit</button>
+        <button class="btn btn-p" onclick="changeOcc(3)">+ 3 Enter</button>
+        <button class="btn btn-g" onclick="changeOcc(-1)">−1</button>
+        <button class="btn btn-amber" onclick="changeOcc(1)">+1</button>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="stat"><div class="sv">62</div><div class="sl">Current Occupancy</div><div class="sd dn">⚠ Near Limit</div></div>
+      <div class="stat"><div class="sv">18</div><div class="sl">In Queue Outside</div><div class="sd">Waiting to enter</div></div>
+      <div class="stat"><div class="sv">3</div><div class="sl">Available Seats</div><div class="sd dn">Low capacity</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Counter Load</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#111;border:1px solid var(--border);border-radius:5px;">
+            <div style="font-size:12px;color:var(--white);width:80px;">Counter A</div>
+            <div style="flex:1;height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden;"><div style="height:100%;background:var(--crimson);border-radius:5px;width:90%;"></div></div>
+            <div style="font-size:11px;color:var(--white);width:36px;text-align:right;">90%</div>
+            <span class="b br">Busy</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#111;border:1px solid var(--border);border-radius:5px;">
+            <div style="font-size:12px;color:var(--white);width:80px;">Counter B</div>
+            <div style="flex:1;height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden;"><div style="height:100%;background:#c9a227;border-radius:5px;width:65%;"></div></div>
+            <div style="font-size:11px;color:var(--white);width:36px;text-align:right;">65%</div>
+            <span class="b ba">Mod</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#111;border:1px solid var(--border);border-radius:5px;">
+            <div style="font-size:12px;color:var(--white);width:80px;">Counter C</div>
+            <div style="flex:1;height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden;"><div style="height:100%;background:#5dbb8e;border-radius:5px;width:40%;"></div></div>
+            <div style="font-size:11px;color:var(--white);width:36px;text-align:right;">40%</div>
+            <span class="b bg">Free</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#111;border:1px solid var(--border);border-radius:5px;">
+            <div style="font-size:12px;color:var(--white);width:80px;">Bakery</div>
+            <div style="flex:1;height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden;"><div style="height:100%;background:#6aadda;border-radius:5px;width:25%;"></div></div>
+            <div style="font-size:11px;color:var(--white);width:36px;text-align:right;">25%</div>
+            <span class="b bb">Light</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Hourly Occupancy — Today</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:130px;margin-top:8px;" id="occ-chart"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <script>['8','9','10','11','12','1','2','3','4','5','6','7'].forEach(h=>{document.write(`<span style="font-size:9px;color:var(--muted);">${h}</span>`)})</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ ACTIVITY LOG -->
+  <div class="section" id="s-actlog">
+    <div class="ph"><div class="pt">Operator Activity Log</div><div class="ps">Full audit trail of all operator actions</div></div>
+
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;">
+        <div class="frow" style="flex:1;min-width:160px;margin:0;"><label>Search</label><input style="margin:0;" placeholder="Search actions..."/></div>
+        <div class="frow" style="min-width:130px;margin:0;"><label>Operator</label><select style="margin:0;"><option>All Operators</option><option>Op. Venkat</option><option>Op. Meera</option><option>Op. Siva</option></select></div>
+        <div class="frow" style="min-width:130px;margin:0;"><label>Action Type</label><select style="margin:0;"><option>All</option><option>Called Token</option><option>Served</option><option>Skipped</option><option>Override</option><option>Pause</option></select></div>
+        <button class="btn btn-p" style="margin-bottom:1px;">Filter</button>
+      </div>
+      <div id="act-log"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+        <span style="font-size:10px;color:var(--muted);">Showing 12 of 284 actions today</span>
+        <div style="display:flex;gap:8px;"><button class="btn btn-g">← Prev</button><button class="btn btn-g">Next →</button></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- OVERRIDE MODAL -->
+<div class="modal-overlay" id="override-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeOverride()">✕</button>
+    <div class="modal-title">Manual Override</div>
+    <div class="modal-sub">Select a specific token to serve out-of-order</div>
+    <div class="frow"><label>Token ID</label><input placeholder="e.g. T-045" id="mo-token"/></div>
+    <div class="frow"><label>Reason</label>
+      <select>
+        <option>Medical / Emergency Priority</option><option>Special Needs</option>
+        <option>System Correction</option><option>Operator Discretion</option>
+      </select>
+    </div>
+    <div class="frow"><label>Notes (required for audit)</label><input placeholder="Brief justification..." id="mo-notes" style="margin:0;"/></div>
+    <div class="btn-row" style="margin-top:18px;">
+      <button class="btn btn-p" onclick="confirmOverride()">Confirm Override</button>
+      <button class="btn btn-g" onclick="closeOverride()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // NAVIGATION
+  function nav(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById('s-'+id).classList.add('active');
+    event.currentTarget.classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // QUEUE DATA
+  const queueData = [
+    {pos:1,token:'T-043',name:'Arjun Mehta',slot:'12:00',wait:'00:48',status:'waiting'},
+    {pos:2,token:'T-044',name:'Sneha Patel',slot:'12:00',wait:'01:22',status:'waiting'},
+    {pos:3,token:'T-045',name:'Rahul Sharma',slot:'12:00',wait:'02:05',status:'waiting'},
+    {pos:4,token:'T-046',name:'Divya Krishnan',slot:'12:30',wait:'02:44',status:'waiting'},
+    {pos:5,token:'T-047',name:'Karan Nair',slot:'12:30',wait:'03:18',status:'waiting'},
+    {pos:6,token:'T-048',name:'Anjali Menon',slot:'12:30',wait:'03:52',status:'waiting'},
+    {pos:7,token:'T-049',name:'Vikram Das',slot:'12:00',wait:'04:29',status:'waitlist'},
+    {pos:8,token:'T-050',name:'Preethi Iyer',slot:'12:30',wait:'05:01',status:'waitlist'},
+    {pos:9,token:'T-051',name:'Anil Varma',slot:'13:00',wait:'05:38',status:'waitlist'},
+    {pos:10,token:'T-052',name:'Kavitha Raj',slot:'12:00',wait:'06:11',status:'waitlist'},
+  ];
+
+  function renderQueue(){
+    const ql = document.getElementById('queue-list');
+    if(!ql) return;
+    ql.innerHTML='';
+    queueData.forEach((q,i)=>{
+      const item=document.createElement('div');
+      item.className='queue-item'+(i===0?' selected':'');
+      item.onclick=()=>{document.querySelectorAll('.queue-item').forEach(x=>x.classList.remove('selected'));item.classList.add('selected');};
+      const statusBadge = q.status==='waitlist'?'<span class="b bb">Waitlist</span>':'<span class="b bg">Waiting</span>';
+      item.innerHTML=`
+        <div class="qi-pos ${i<3?'top3':''}">${q.pos}</div>
+        <div class="qi-token">${q.token}</div>
+        <div class="qi-name">${q.name}</div>
+        <div class="qi-slot">${q.slot}</div>
+        <div class="qi-time">${q.wait}</div>
+        <div class="qi-status">${statusBadge}</div>
+        <div class="qi-actions">
+          <button class="btn btn-p" style="padding:4px 10px;font-size:9px;" onclick="serveToken('${q.token}','${q.name}',event)">Serve</button>
+          <button class="btn btn-g" style="padding:4px 10px;font-size:9px;" onclick="skipToken('${q.token}',event)">Skip</button>
+        </div>`;
+      ql.appendChild(item);
+    });
+  }
+  renderQueue();
+
+  // SERVE TIMER
+  let serveSeconds = 134;
+  function formatTime(s){return Math.floor(s/60).toString().padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+  setInterval(()=>{serveSeconds++;const el=document.getElementById('ns-timer');if(el)el.textContent=formatTime(serveSeconds);},1000);
+
+  function markServed(){
+    const t=document.getElementById('ns-token');const n=document.getElementById('ns-name');
+    const tokens=['T-043','T-044','T-045'];const names=['Arjun Mehta','Sneha Patel','Rahul Sharma'];
+    const idx=Math.floor(Math.random()*tokens.length);
+    if(t)t.textContent=tokens[idx];if(n)n.textContent=names[idx];
+    serveSeconds=0;
+    const served=document.getElementById('q-served');
+    if(served)served.textContent=parseInt(served.textContent)+1;
+    addActivityLog('Op. Venkat','Marked Served','Token T-042 served successfully','bg');
+    showToast('✓ Token T-042 marked as served');
+  }
+
+  function callNext(){
+    const tokens=['T-043','T-044','T-045','T-046'];
+    const names=['Arjun Mehta','Sneha Patel','Rahul Sharma','Divya Krishnan'];
+    const idx=Math.floor(Math.random()*tokens.length);
+    const t=document.getElementById('ns-token');const n=document.getElementById('ns-name');
+    if(t)t.textContent=tokens[idx];if(n)n.textContent=names[idx];
+    serveSeconds=0;
+    addActivityLog('Op. Venkat','Called Next','Token '+tokens[idx]+' called to counter','bb');
+    showToast('📢 '+tokens[idx]+' — '+names[idx]+' called to counter');
+  }
+
+  function serveToken(token,name,e){e.stopPropagation();const t=document.getElementById('ns-token');const n=document.getElementById('ns-name');if(t)t.textContent=token;if(n)n.textContent=name;serveSeconds=0;addActivityLog('Op. Venkat','Manual Serve','Token '+token+' selected and called','bb');showToast('📢 '+token+' called to counter');}
+
+  function skipToken(token,e){e.stopPropagation();const s=document.getElementById('q-skipped');if(s)s.textContent=parseInt(s.textContent)+1;addActivityLog('Op. Venkat','Skipped','Token '+token+' skipped — moved to back','ba');showToast('⏭ '+token+' skipped');}
+
+  // EXPIRY LIST
+  const expiryData=[
+    {token:'T-041',name:'Suresh Kumar',slot:'12:00',exp:'1:24'},
+    {token:'T-044',name:'Sneha Patel',slot:'12:00',exp:'2:58'},
+    {token:'T-046',name:'Divya Krishnan',slot:'12:30',exp:'4:11'},
+  ];
+  const el2=document.getElementById('expiry-list');
+  if(el2) expiryData.forEach(e=>{
+    el2.innerHTML+=`<div class="expiry-item">
+      <div class="ei-token">${e.token}</div>
+      <div class="ei-info"><div class="ei-name">${e.name}</div><div class="ei-exp">Expires in <span class="countdown">${e.exp}</span></div></div>
+      <div class="ei-actions">
+        <button class="btn btn-green" style="padding:5px 12px;font-size:9px;">Extend</button>
+        <button class="btn btn-amber" style="padding:5px 12px;font-size:9px;">Skip Now</button>
+      </div>
+    </div>`;
+  });
+
+  // ACTIVITY LOG DATA
+  const actData=[
+    {op:'Op. Venkat',action:'Called Next',msg:'T-042 Priya Ramachandran called to Counter A',color:'#6aadda',time:'12:08'},
+    {op:'Op. Venkat',action:'Marked Served',msg:'T-041 Suresh Kumar served — 2min 14sec',color:'#5dbb8e',time:'12:05'},
+    {op:'Op. Meera',action:'Override',msg:'T-038 Arun Pillai prioritized — medical need',color:'#c9a227',time:'11:52'},
+    {op:'Op. Venkat',action:'Called Next',msg:'T-041 Suresh Kumar called to Counter A',color:'#6aadda',time:'11:50'},
+    {op:'Op. Meera',action:'Skipped',msg:'T-039 user_4821 skipped after timeout',color:'#BD6467',time:'11:48'},
+    {op:'Op. Siva',action:'Queue Paused',msg:'Counter B maintenance — queue paused 3 min',color:'#c9a227',time:'11:15'},
+    {op:'Op. Siva',action:'Queue Resumed',msg:'Counter B back online',color:'#5dbb8e',time:'11:18'},
+    {op:'Op. Meera',action:'Called Next',msg:'T-039 user_4821 called to Counter B',color:'#6aadda',time:'11:12'},
+    {op:'Op. Venkat',action:'Promote',msg:'T-034 promoted from waitlist — slot vacancy',color:'#5dbb8e',time:'10:58'},
+    {op:'Op. Meera',action:'Marked Served',msg:'T-035 Preethi Iyer served — 1min 58sec',color:'#5dbb8e',time:'10:55'},
+    {op:'Op. Siva',action:'Called Next',msg:'T-035 Preethi Iyer called to Counter C',color:'#6aadda',time:'10:53'},
+    {op:'Op. Venkat',action:'Override',msg:'T-031 user_9981 removed — confirmed no-show',color:'#BD6467',time:'10:42'},
+  ];
+  const actLog=document.getElementById('act-log');
+  if(actLog) actData.forEach(a=>{
+    actLog.innerHTML+=`<div class="act-item">
+      <div class="act-dot" style="background:${a.color};box-shadow:0 0 5px ${a.color}60;"></div>
+      <div class="act-op">${a.op}</div>
+      <div class="act-msg"><span style="color:var(--white);font-weight:500;">${a.action}</span> — ${a.msg}</div>
+      <div class="act-time">${a.time}</div>
+    </div>`;
+  });
+
+  function addActivityLog(op,action,msg,colorClass){
+    const al=document.getElementById('act-log');
+    if(!al)return;
+    const colors={bg:'#5dbb8e',br:'#BD6467',ba:'#c9a227',bb:'#6aadda'};
+    const c=colors[colorClass]||'#888';
+    const now=new Date();
+    const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+    al.insertAdjacentHTML('afterbegin',`<div class="act-item">
+      <div class="act-dot" style="background:${c};box-shadow:0 0 5px ${c}60;"></div>
+      <div class="act-op">${op}</div>
+      <div class="act-msg"><span style="color:var(--white);font-weight:500;">${action}</span> — ${msg}</div>
+      <div class="act-time">${time}</div>
+    </div>`);
+  }
+
+  // OCCUPANCY CHART
+  const occVals=[22,30,45,68,78,62,40,35,50,65,55,38];
+  const occChart=document.getElementById('occ-chart');
+  if(occChart){
+    occVals.forEach((v,i)=>{
+      const bar=document.createElement('div');
+      const pct=Math.round((v/80)*120);
+      bar.style.cssText=`flex:1;border-radius:3px 3px 0 0;height:${pct}px;cursor:pointer;transition:opacity 0.15s;`;
+      bar.style.background=v>=72?'var(--crimson)':v>=60?'#c9a227':'var(--rose)';
+      bar.title=v+' occupants';
+      bar.onmouseenter=()=>bar.style.opacity='0.7';
+      bar.onmouseleave=()=>bar.style.opacity='1';
+      occChart.appendChild(bar);
+    });
+  }
+
+  // OCCUPANCY CONTROL
+  let occ=62;
+  function changeOcc(delta){
+    occ=Math.max(0,Math.min(80,occ+delta));
+    const pct=Math.round((occ/80)*100);
+    const el=document.getElementById('occ-big');if(el)el.textContent=occ;
+    const bar=document.getElementById('occ-big-bar');
+    if(bar){bar.style.width=pct+'%';bar.style.background=pct>=90?'#e03030':pct>=75?'var(--crimson)':'#c9a227';}
+    const sb=document.getElementById('sb-occ');if(sb)sb.textContent=occ;
+    const sbBar=document.getElementById('sb-bar');
+    if(sbBar){sbBar.style.width=pct+'%';sbBar.style.background=pct>=90?'#e03030':pct>=75?'var(--crimson)':'#c9a227';}
+    const banner=document.getElementById('overload-banner');
+    if(banner){banner.classList.toggle('hidden',pct<75);}
+  }
+
+  // OVERRIDE MODAL
+  function openOverride(){document.getElementById('override-modal').classList.add('open');}
+  function closeOverride(){document.getElementById('override-modal').classList.remove('open');}
+  function confirmOverride(){
+    const token=document.getElementById('mo-token').value||'T-045';
+    const notes=document.getElementById('mo-notes').value||'Operator discretion';
+    closeOverride();
+    addActivityLog('Op. Venkat','Override','Token '+token+' overridden — '+notes,'ba');
+    const t=document.getElementById('ns-token');if(t)t.textContent=token;
+    showToast('⚙ Override applied — '+token+' now serving');
+  }
+  document.getElementById('override-modal').addEventListener('click',function(e){if(e.target===this)closeOverride();});
+
+  // PAUSE TOGGLE
+  let paused=false;
+  function togglePause(){
+    paused=!paused;
+    const btn=document.getElementById('pause-btn');
+    if(btn){btn.textContent=paused?'▶ Resume Queue':'Pause Queue';btn.className=paused?'btn btn-green':'btn btn-amber';}
+    addActivityLog('Op. Venkat',paused?'Queue Paused':'Queue Resumed',paused?'All token calling paused':'Queue resumed normally',paused?'br':'bg');
+    showToast(paused?'⏸ Queue paused':'▶ Queue resumed');
+  }
+
+  // OVERRIDE LOG
+  function logOverride(){
+    const ol=document.getElementById('override-log');
+    if(!ol)return;
+    const now=new Date();const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+    ol.insertAdjacentHTML('afterbegin',`<tr><td>T-New</td><td>Op. Venkat</td><td><span class="b ba">Priority Serve</span></td><td>Manual selection</td><td>${time}</td></tr>`);
+    showToast('✓ Override applied and logged');
+  }
+
+  // TOAST
+  let toastTimeout;
+  function showToast(msg){
+    let t=document.getElementById('toast');
+    if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:24px;right:24px;background:#0a2018;border:1px solid #1a4030;color:#5dbb8e;padding:12px 18px;border-radius:7px;font-size:11px;letter-spacing:0.06em;z-index:9999;transition:opacity 0.3s;';document.body.appendChild(t);}
+    t.textContent=msg;t.style.opacity='1';
+    clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.style.opacity='0',2800);
+  }
+
+  // LIVE TIMER TICK (simulate expiry countdown)
+  let expiryTick=0;
+  setInterval(()=>{
+    expiryTick++;
+    document.querySelectorAll('.countdown').forEach((cd,i)=>{
+      const base=[84,178,251];
+      const val=Math.max(0,(base[i]||60)-expiryTick);
+      cd.textContent=formatTime(val);
+      if(val<30)cd.style.color='#e03030';
+    });
+  },1000);
+</script>
+</body>
+</html>
