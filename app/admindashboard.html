@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CAFE Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --crimson:#B1464A; --black:#000200; --white:#FFFFFF; --rose:#BD6467; --fog:#F9F9F9;
+    --s1:#0d0d0d; --s2:#111; --border:#1f1f1f; --muted:#444; --dim:#888;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Mono',monospace;background:var(--black);color:var(--white);display:flex;min-height:100vh;font-size:13px;}
+  a{text-decoration:none;color:inherit;}
+
+  /* SIDEBAR */
+  .sidebar{width:224px;background:#060606;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+  .sidebar::-webkit-scrollbar{width:3px;}
+  .sidebar::-webkit-scrollbar-thumb{background:#1a1a1a;}
+  .s-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
+  .s-logo .brand{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--crimson);}
+  .s-logo .sub{font-size:9px;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-top:2px;}
+  .s-back{display:flex;align-items:center;gap:7px;padding:12px 20px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#3a3a3a;border-bottom:1px solid var(--border);transition:color 0.15s;cursor:pointer;}
+  .s-back:hover{color:var(--dim);}
+  .nav-sec{font-size:9px;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;padding:16px 20px 5px;}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:9px 20px;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;color:var(--dim);border-left:2px solid transparent;transition:all 0.14s;user-select:none;}
+  .nav-item:hover{color:var(--white);background:#0f0f0f;}
+  .nav-item.active{color:var(--white);background:rgba(177,70,74,0.09);border-left:2px solid var(--crimson);}
+  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.5;flex-shrink:0;}
+
+  /* MAIN */
+  .main{margin-left:224px;flex:1;padding:36px 36px 70px;min-height:100vh;}
+
+  /* SECTION */
+  .section{display:none;animation:fadeUp 0.22s ease both;}
+  .section.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .ph{margin-bottom:30px;}
+  .pt{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.02em;}
+  .ps{font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:4px;}
+
+  /* CARD */
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:22px;margin-bottom:18px;}
+  .ct{font-size:9.5px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--rose);margin-bottom:16px;display:flex;align-items:center;gap:7px;}
+  .ct::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--crimson);flex-shrink:0;}
+
+  /* GRIDS */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+
+  /* STAT */
+  .stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+  .sv{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+  .sl{font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:7px;}
+  .sd{font-size:10px;margin-top:5px;}.sd.up{color:#5dbb8e;}.sd.dn{color:var(--crimson);}
+
+  /* FORM */
+  label{font-size:9.5px;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:5px;}
+  input,select,textarea{width:100%;background:#151515;border:1px solid #272727;border-radius:5px;color:var(--white);padding:9px 12px;font-size:12px;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.15s;margin-bottom:14px;}
+  input:focus,select:focus,textarea:focus{border-color:var(--crimson);}
+  textarea{resize:vertical;min-height:80px;}
+  select option{background:#151515;}
+  .frow{margin-bottom:14px;}
+  .frow label{margin-bottom:5px;}
+  .frow input,.frow select,.frow textarea{margin-bottom:0;}
+
+  /* BUTTONS */
+  .btn{padding:8px 20px;border-radius:5px;border:none;cursor:pointer;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;transition:opacity 0.15s,transform 0.1s;}
+  .btn:active{transform:scale(0.97);}
+  .btn-p{background:var(--crimson);color:var(--white);}
+  .btn-p:hover{opacity:0.84;}
+  .btn-g{background:transparent;color:var(--dim);border:1px solid var(--border);}
+  .btn-g:hover{color:var(--white);border-color:#333;}
+  .btn-e{background:#141414;color:var(--rose);border:1px solid var(--border);}
+  .btn-e:hover{background:#1c1c1c;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+
+  /* TABLE */
+  .tbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .tbl thead th{text-align:left;padding:7px 13px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+  .tbl tbody tr{transition:background 0.1s;}
+  .tbl tbody tr:hover{background:#0f0f0f;}
+  .tbl tbody td{padding:10px 13px;border-bottom:1px solid #0d0d0d;color:#bbb;}
+
+  /* BADGES */
+  .b{display:inline-block;padding:2px 9px;border-radius:3px;font-size:9.5px;letter-spacing:0.05em;font-weight:500;}
+  .bg{background:#0a2018;color:#5dbb8e;border:1px solid #153028;}
+  .br{background:#1e0d0d;color:var(--rose);border:1px solid #3a1818;}
+  .ba{background:#1c1600;color:#c9a227;border:1px solid #342a00;}
+  .bb{background:#0a1620;color:#6aadda;border:1px solid #153048;}
+
+  /* TOGGLE */
+  .tog-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #0f0f0f;}
+  .tog-row:last-child{border-bottom:none;}
+  .tog-info .tl{font-size:12px;color:var(--white);}
+  .tog-info .ts{font-size:10px;color:var(--muted);margin-top:2px;}
+  .tog{width:38px;height:20px;background:#1e1e1e;border-radius:10px;position:relative;cursor:pointer;border:1px solid #2e2e2e;transition:background 0.2s;flex-shrink:0;}
+  .tog.on{background:var(--crimson);border-color:var(--crimson);}
+  .tog::after{content:'';width:14px;height:14px;background:var(--white);border-radius:50%;position:absolute;top:2px;left:2px;transition:left 0.18s;}
+  .tog.on::after{left:20px;}
+
+  /* SLOT GRID */
+  .slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+  .slot-item{background:#111;border:1px solid var(--border);border-radius:6px;padding:14px;text-align:center;}
+  .st{font-size:12px;color:var(--white);font-weight:500;}
+  .sc{font-size:10px;color:var(--muted);margin-top:3px;}
+  .sbar{height:3px;background:#1e1e1e;border-radius:2px;margin-top:8px;overflow:hidden;}
+  .sbar-f{height:100%;border-radius:2px;background:var(--crimson);}
+
+  /* BAR CHART */
+  .barchart{display:flex;align-items:flex-end;gap:8px;height:160px;padding-top:8px;}
+  .bg-group{display:flex;flex-direction:column;align-items:center;flex:1;}
+  .bars{display:flex;gap:4px;align-items:flex-end;flex:1;width:100%;}
+  .bar{flex:1;border-radius:3px 3px 0 0;transition:opacity 0.15s;min-width:8px;cursor:pointer;}
+  .bar:hover{opacity:0.75;}
+  .blabel{font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:0.05em;}
+  .legend{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+  .leg{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
+  .ld{width:10px;height:10px;border-radius:2px;}
+
+  /* LINE SVG CHART */
+  .chart-wrap{position:relative;}
+  .y-labels{display:flex;flex-direction:column;justify-content:space-between;height:180px;padding-right:8px;font-size:9px;color:var(--muted);text-align:right;}
+  .chart-row{display:flex;gap:0;}
+
+  /* FORECAST BARS */
+  .fc-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #0c0c0c;}
+  .fc-row:last-child{border-bottom:none;}
+  .fc-l{width:70px;font-size:11px;color:var(--dim);flex-shrink:0;}
+  .fc-bw{flex:1;height:10px;background:#181818;border-radius:5px;overflow:hidden;}
+  .fc-b{height:100%;border-radius:5px;transition:width 0.6s ease;}
+  .fc-v{width:40px;text-align:right;font-size:11px;color:var(--white);}
+  .fc-d{width:50px;text-align:right;font-size:10px;}
+
+  /* REC ITEM */
+  .rec{display:flex;align-items:flex-start;gap:14px;padding:14px;background:#0f0f0f;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;}
+  .rec-ic{width:38px;height:38px;border-radius:6px;background:rgba(177,70,74,0.1);border:1px solid rgba(177,70,74,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .rec-t{font-size:12px;color:var(--white);font-weight:500;}
+  .rec-d{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.55;}
+
+  /* INCIDENT */
+  .inc{display:flex;gap:13px;padding:13px;border-bottom:1px solid #0c0c0c;align-items:flex-start;}
+  .inc:last-child{border-bottom:none;}
+  .inc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+  .inc-dot.h{background:var(--crimson);box-shadow:0 0 8px var(--crimson);}
+  .inc-dot.m{background:#c9a227;box-shadow:0 0 6px #c9a22760;}
+  .inc-dot.l{background:#5dbb8e;box-shadow:0 0 6px #5dbb8e60;}
+  .inc-id{font-size:10px;color:var(--muted);width:62px;flex-shrink:0;}
+  .inc-msg{font-size:11.5px;color:#ccc;flex:1;line-height:1.5;}
+  .inc-time{font-size:10px;color:var(--muted);flex-shrink:0;}
+
+  /* EXPORT BANNER */
+  .exp-bar{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .exp-t{font-size:12px;color:var(--white);}
+  .exp-s{font-size:10px;color:var(--muted);margin-top:2px;}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-thumb{background:#1e1e1e;border-radius:2px;}
+
+  /* DONUT */
+  .donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .donut-item{text-align:center;}
+  .donut-lbl{font-size:9.5px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:7px;}
+
+  @media(max-width:900px){.g3,.g4{grid-template-columns:1fr 1fr;}}
+  @media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr;}.sidebar{display:none;}.main{margin-left:0;}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="brand">MESA</div>
+    <div class="sub">Admin Console</div>
+  </div>
+  <a class="s-back" href="index.html">← Back to Home</a>
+
+  <div class="nav-sec">Overview</div>
+  <div class="nav-item active" onclick="nav('overview')"><span class="dot"></span>Analytics Overview</div>
+
+  <div class="nav-sec">Booking</div>
+  <div class="nav-item" onclick="nav('slots')"><span class="dot"></span>Slot Capacity Config</div>
+  <div class="nav-item" onclick="nav('fairrules')"><span class="dot"></span>Fair Booking Rules</div>
+  <div class="nav-item" onclick="nav('audit')"><span class="dot"></span>Booking Audit Log</div>
+  <div class="nav-item" onclick="nav('fairaudit')"><span class="dot"></span>Fairness Audit</div>
+
+  <div class="nav-sec">Operations</div>
+  <div class="nav-item" onclick="nav('prepserved')"><span class="dot"></span>Prep vs Served</div>
+  <div class="nav-item" onclick="nav('waste')"><span class="dot"></span>Waste Logging</div>
+  <div class="nav-item" onclick="nav('wasteanalytics')"><span class="dot"></span>Waste Analytics</div>
+
+  <div class="nav-sec">Intelligence</div>
+  <div class="nav-item" onclick="nav('forecast')"><span class="dot"></span>Demand Forecast</div>
+  <div class="nav-item" onclick="nav('recos')"><span class="dot"></span>Prep Recommendations</div>
+
+  <div class="nav-sec">System</div>
+  <div class="nav-item" onclick="nav('incidents')"><span class="dot"></span>Incident Log</div>
+  <div class="nav-item" onclick="nav('export')"><span class="dot"></span>Data Export</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ① OVERVIEW -->
+  <div class="section active" id="s-overview">
+    <div class="ph"><div class="pt">Analytics Overview</div><div class="ps">Centralized performance snapshot · Today, Feb 28 2026</div></div>
+
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">1,284</div><div class="sl">Bookings Today</div><div class="sd up">↑ 12% vs yesterday</div></div>
+      <div class="stat"><div class="sv">94%</div><div class="sl">Slot Utilization</div><div class="sd up">↑ 3% vs last week</div></div>
+      <div class="stat"><div class="sv">6.4 kg</div><div class="sl">Waste Today</div><div class="sd up">↓ 18% vs avg</div></div>
+      <div class="stat"><div class="sv">98.2%</div><div class="sl">Fairness Score</div><div class="sd up">↑ 0.4 pts</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Bookings This Week</div>
+        <div class="legend">
+          <div class="leg"><div class="ld" style="background:var(--crimson)"></div>Bookings</div>
+          <div class="leg"><div class="ld" style="background:var(--rose)"></div>Cancellations</div>
+        </div>
+        <div class="barchart" id="overview-chart"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Demand Heatmap (This Week)</div>
+        <div id="heatmap" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+        <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">
+          <div class="leg"><div class="ld" style="background:#1a0a0b;border:1px solid var(--crimson)"></div>Low</div>
+          <div class="leg"><div class="ld" style="background:#6b2527"></div>Medium</div>
+          <div class="leg"><div class="ld" style="background:var(--crimson)"></div>High</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="card">
+        <div class="ct">Top Slots</div>
+        <table class="tbl">
+          <thead><tr><th>Slot</th><th>Bookings</th><th>Fill</th></tr></thead>
+          <tbody>
+            <tr><td>12:00–12:30</td><td>312</td><td><span class="b bg">98%</span></td></tr>
+            <tr><td>12:30–13:00</td><td>298</td><td><span class="b bg">93%</span></td></tr>
+            <tr><td>13:00–13:30</td><td>210</td><td><span class="b ba">66%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="ct">Active Alerts</div>
+        <div class="inc"><div class="inc-dot h"></div><div class="inc-msg">Slot overbooking risk at 12:00 tomorrow</div><span class="b br">High</span></div>
+        <div class="inc"><div class="inc-dot m"></div><div class="inc-msg">Waste threshold exceeded Thu dinner</div><span class="b ba">Med</span></div>
+        <div class="inc"><div class="inc-dot l"></div><div class="inc-msg">Fairness score dip detected — user group B</div><span class="b bg">Low</span></div>
+      </div>
+      <div class="card">
+        <div class="ct">System Status</div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Auto-Forecasting</div><div class="ts">ML demand engine</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Waste Alerts</div><div class="ts">Email + dashboard</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Fairness Enforcement</div><div class="ts">Rule engine active</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② SLOT CONFIG -->
+  <div class="section" id="s-slots">
+    <div class="ph"><div class="pt">Slot Capacity Configuration</div><div class="ps">Configure meal slot capacities, windows and availability</div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Add / Edit Slot</div>
+        <div class="g2">
+          <div class="frow"><label>Slot Start Time</label><input type="time" value="12:00"/></div>
+          <div class="frow"><label>Slot End Time</label><input type="time" value="12:30"/></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Max Capacity</label><input type="number" value="50" min="1"/></div>
+          <div class="frow"><label>Meal Type</label>
+            <select><option>Lunch</option><option>Breakfast</option><option>Dinner</option><option>Snack</option></select>
+          </div>
+        </div>
+        <div class="frow"><label>Days Active</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+            <script>['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>{document.write(`<label style="flex-direction:row;align-items:center;gap:5px;cursor:pointer;text-transform:none;color:#aaa;font-size:11px;"><input type="checkbox" ${['Mon','Tue','Wed','Thu','Fri'].includes(d)?'checked':''} style="width:auto;margin-bottom:0;padding:0;border:none;background:transparent;"/> ${d}</label>`)})</script>
+          </div>
+        </div>
+        <div class="frow"><label>Buffer Time (min)</label><input type="number" value="5" min="0"/></div>
+        <div class="btn-row"><button class="btn btn-p">Save Slot</button><button class="btn btn-g">Clear</button></div>
+      </div>
+      <div class="card">
+        <div class="ct">Current Slot Configuration</div>
+        <div class="slot-grid" id="slot-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">All Slots</div>
+      <table class="tbl">
+        <thead><tr><th>Slot</th><th>Meal</th><th>Capacity</th><th>Days</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td>08:00–08:30</td><td>Breakfast</td><td>40</td><td>Mon–Fri</td><td><span class="b bg">Active</span></td><td><button class="btn btn-g" style="padding:4px 12px;font-size:9px;">Edit</button></td></tr>
+          <tr><td>12:00–12:30</td><td>Lunch</td><td>80</td><td>Mon–Sat</td><td><span class="b bg">Active</span></td><td><button class="btn btn-g" style="padding:4px 12px;font-size:9px;">Edit</button></td></tr>
+          <tr><td>12:30–13:00</td><td>Lunch</td><td>80</td><td>Mon–Sat</td><td><span class="b bg">Active</span></td><td><button class="btn btn-g" style="padding:4px 12px;font-size:9px;">Edit</button></td></tr>
+          <tr><td>13:00–13:30</td><td>Lunch</td><td>60</td><td>Mon–Fri</td><td><span class="b ba">Moderate</span></td><td><button class="btn btn-g" style="padding:4px 12px;font-size:9px;">Edit</button></td></tr>
+          <tr><td>19:00–19:30</td><td>Dinner</td><td>50</td><td>Mon–Sun</td><td><span class="b bg">Active</span></td><td><button class="btn btn-g" style="padding:4px 12px;font-size:9px;">Edit</button></td></tr>
+          <tr><td>19:30–20:00</td><td>Dinner</td><td>50</td><td>Mon–Sun</td><td><span class="b br">Disabled</span></td><td><button class="btn btn-g" style="padding:4px 12px;font-size:9px;">Enable</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ③ FAIR RULES -->
+  <div class="section" id="s-fairrules">
+    <div class="ph"><div class="pt">Fair Booking Rules</div><div class="ps">Configure allocation fairness, limits and priority policies</div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Booking Limits</div>
+        <div class="frow"><label>Max Bookings Per User Per Day</label><input type="number" value="2"/></div>
+        <div class="frow"><label>Max Bookings Per User Per Week</label><input type="number" value="10"/></div>
+        <div class="frow"><label>Max Bookings Per User Per Month</label><input type="number" value="30"/></div>
+        <div class="frow"><label>Advance Booking Window (days)</label><input type="number" value="7"/></div>
+        <div class="frow"><label>Cancellation Deadline (hours before slot)</label><input type="number" value="2"/></div>
+        <div class="btn-row"><button class="btn btn-p">Save Limits</button></div>
+      </div>
+      <div class="card">
+        <div class="ct">Priority &amp; Allocation Rules</div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Priority Booking for Special Needs</div><div class="ts">Wheelchair, dietary, medical needs</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Waitlist Auto-Promotion</div><div class="ts">Auto-fill cancelled slots from waitlist</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">No-Show Penalty System</div><div class="ts">Restrict repeat no-show users</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Group Booking Cap</div><div class="ts">Limit block reservations by organizations</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tog-row"><div class="tog-info"><div class="tl">Off-Peak Incentive Mode</div><div class="ts">Reward users booking low-demand slots</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="frow" style="margin-top:14px;"><label>No-Show Strikes Before Restriction</label><input type="number" value="3"/></div>
+        <div class="btn-row"><button class="btn btn-p">Apply Rules</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Demographic Equity Settings</div>
+      <div class="g3">
+        <div class="frow"><label>Faculty Allocation Reserve (%)</label><input type="number" value="15"/></div>
+        <div class="frow"><label>Student Allocation Reserve (%)</label><input type="number" value="75"/></div>
+        <div class="frow"><label>Staff Allocation Reserve (%)</label><input type="number" value="10"/></div>
+      </div>
+      <div class="g2">
+        <div class="frow"><label>Fairness Enforcement Mode</label>
+          <select><option>Soft (Warn only)</option><option selected>Strict (Block violations)</option><option>Audit only</option></select>
+        </div>
+        <div class="frow"><label>Rebalance Trigger Threshold (%)</label><input type="number" value="5"/></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-p">Save Equity Config</button><button class="btn btn-g">Reset Defaults</button></div>
+    </div>
+  </div>
+
+  <!-- ④ BOOKING AUDIT -->
+  <div class="section" id="s-audit">
+    <div class="ph"><div class="pt">Booking Audit Log</div><div class="ps">Complete trail of all booking actions</div></div>
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;">
+        <div class="frow" style="flex:1;min-width:160px;margin:0;"><label>Search User / Token</label><input style="margin:0;" placeholder="e.g. alice@mail.com"/></div>
+        <div class="frow" style="min-width:130px;margin:0;"><label>Action</label><select style="margin:0;"><option>All</option><option>BOOK</option><option>CANCEL</option><option>WAITLIST</option><option>OVERRIDE</option></select></div>
+        <div class="frow" style="min-width:130px;margin:0;"><label>Status</label><select style="margin:0;"><option>All</option><option>Confirmed</option><option>Cancelled</option><option>Waitlisted</option></select></div>
+        <div class="frow" style="min-width:130px;margin:0;"><label>Date</label><input type="date" style="margin:0;" value="2026-02-28"/></div>
+        <button class="btn btn-p" style="margin-bottom:1px;">Filter</button>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>Token ID</th><th>User</th><th>Action</th><th>Slot</th><th>Timestamp</th><th>Status</th><th>IP</th></tr></thead>
+        <tbody>
+          <tr><td>BK-2841</td><td>alice@mail.com</td><td><span class="b bg">BOOK</span></td><td>12:00–12:30</td><td>09:41:02</td><td><span class="b bg">Confirmed</span></td><td>10.0.1.4</td></tr>
+          <tr><td>BK-2840</td><td>bob@mail.com</td><td><span class="b br">CANCEL</span></td><td>13:00–13:30</td><td>09:38:14</td><td><span class="b br">Cancelled</span></td><td>10.0.1.7</td></tr>
+          <tr><td>BK-2839</td><td>carol@mail.com</td><td><span class="b bg">BOOK</span></td><td>11:30–12:00</td><td>09:31:55</td><td><span class="b bg">Confirmed</span></td><td>10.0.2.1</td></tr>
+          <tr><td>BK-2838</td><td>dave@mail.com</td><td><span class="b ba">WAITLIST</span></td><td>12:00–12:30</td><td>09:28:07</td><td><span class="b ba">Waitlisted</span></td><td>10.0.1.9</td></tr>
+          <tr><td>BK-2837</td><td>eve@mail.com</td><td><span class="b bg">BOOK</span></td><td>14:00–14:30</td><td>09:20:43</td><td><span class="b bg">Confirmed</span></td><td>10.0.3.2</td></tr>
+          <tr><td>BK-2836</td><td>frank@mail.com</td><td><span class="b bb">OVERRIDE</span></td><td>12:00–12:30</td><td>09:15:31</td><td><span class="b bg">Confirmed</span></td><td>10.0.0.1</td></tr>
+          <tr><td>BK-2835</td><td>grace@mail.com</td><td><span class="b bg">BOOK</span></td><td>08:00–08:30</td><td>08:50:12</td><td><span class="b bg">Confirmed</span></td><td>10.0.1.15</td></tr>
+          <tr><td>BK-2834</td><td>henry@mail.com</td><td><span class="b br">CANCEL</span></td><td>12:30–13:00</td><td>08:42:08</td><td><span class="b br">Cancelled</span></td><td>10.0.2.8</td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+        <span style="font-size:10px;color:var(--muted);">Showing 8 of 2,841 entries</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-g">← Prev</button>
+          <button class="btn btn-g">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ FAIRNESS AUDIT -->
+  <div class="section" id="s-fairaudit">
+    <div class="ph"><div class="pt">Fairness Audit Dashboard</div><div class="ps">Equity metrics and allocation distribution analysis</div></div>
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">98.2%</div><div class="sl">Overall Fairness Score</div><div class="sd up">↑ 0.4 pts</div></div>
+      <div class="stat"><div class="sv">14</div><div class="sl">Violations This Month</div><div class="sd up">↓ 6 vs last month</div></div>
+      <div class="stat"><div class="sv">0.8%</div><div class="sl">Over-Quota Users</div><div class="sd up">↓ 0.2% trend</div></div>
+      <div class="stat"><div class="sv">99.1%</div><div class="sl">Waitlist Conversion</div><div class="sd up">↑ 1.1%</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Allocation by User Group</div>
+        <div id="fair-barchart"></div>
+        <div style="margin-top:14px;">
+          <div class="fc-row"><div class="fc-l">Students</div><div class="fc-bw"><div class="fc-b" style="width:78%;background:var(--crimson);"></div></div><div class="fc-v">78%</div><div class="fc-d" style="color:#5dbb8e;">≈ target</div></div>
+          <div class="fc-row"><div class="fc-l">Faculty</div><div class="fc-bw"><div class="fc-b" style="width:14%;background:var(--rose);"></div></div><div class="fc-v">14%</div><div class="fc-d" style="color:#5dbb8e;">≈ target</div></div>
+          <div class="fc-row"><div class="fc-l">Staff</div><div class="fc-bw"><div class="fc-b" style="width:8%;background:#6aadda;"></div></div><div class="fc-v">8%</div><div class="fc-d" style="color:var(--crimson);">↓ 2%</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Rule Violations Log</div>
+        <table class="tbl">
+          <thead><tr><th>User</th><th>Rule</th><th>Date</th><th>Action Taken</th></tr></thead>
+          <tbody>
+            <tr><td>user_4821</td><td>Daily limit exceeded</td><td>Feb 27</td><td><span class="b br">Blocked</span></td></tr>
+            <tr><td>user_3012</td><td>No-show ×3</td><td>Feb 26</td><td><span class="b ba">Restricted</span></td></tr>
+            <tr><td>user_7745</td><td>Advance booking abuse</td><td>Feb 25</td><td><span class="b bb">Warned</span></td></tr>
+            <tr><td>user_0991</td><td>Group cap violation</td><td>Feb 24</td><td><span class="b br">Blocked</span></td></tr>
+            <tr><td>user_2234</td><td>Monthly quota exceeded</td><td>Feb 22</td><td><span class="b ba">Restricted</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Peak Demand Equity — Slot Access by Group</div>
+      <div class="barchart" id="equity-chart"></div>
+      <div class="legend" style="margin-top:12px;">
+        <div class="leg"><div class="ld" style="background:var(--crimson)"></div>Students</div>
+        <div class="leg"><div class="ld" style="background:var(--rose)"></div>Faculty</div>
+        <div class="leg"><div class="ld" style="background:#6aadda"></div>Staff</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ PREP VS SERVED -->
+  <div class="section" id="s-prepserved">
+    <div class="ph"><div class="pt">Prep vs Served Comparison</div><div class="ps">Track food preparation accuracy against actual servings</div></div>
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">1,205</div><div class="sl">Total Prepared</div><div class="sd">This week</div></div>
+      <div class="stat"><div class="sv">1,118</div><div class="sl">Total Served</div><div class="sd">This week</div></div>
+      <div class="stat"><div class="sv">87</div><div class="sl">Surplus Units</div><div class="sd dn">7.2% waste rate</div></div>
+      <div class="stat"><div class="sv">92.7%</div><div class="sl">Accuracy Rate</div><div class="sd up">↑ 2.1% vs last week</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">Weekly Prep vs Served</div>
+      <div class="legend">
+        <div class="leg"><div class="ld" style="background:var(--crimson)"></div>Prepared</div>
+        <div class="leg"><div class="ld" style="background:var(--rose);opacity:0.7"></div>Served</div>
+      </div>
+      <div class="barchart" id="ps-chart"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Daily Breakdown Table</div>
+      <table class="tbl">
+        <thead><tr><th>Day</th><th>Meal</th><th>Prepared</th><th>Served</th><th>Surplus</th><th>Accuracy</th></tr></thead>
+        <tbody>
+          <tr><td>Mon</td><td>Lunch</td><td>180</td><td>162</td><td>18</td><td><span class="b bg">90%</span></td></tr>
+          <tr><td>Tue</td><td>Lunch</td><td>210</td><td>198</td><td>12</td><td><span class="b bg">94.3%</span></td></tr>
+          <tr><td>Wed</td><td>Lunch</td><td>195</td><td>170</td><td>25</td><td><span class="b ba">87.2%</span></td></tr>
+          <tr><td>Thu</td><td>Lunch</td><td>220</td><td>215</td><td>5</td><td><span class="b bg">97.7%</span></td></tr>
+          <tr><td>Fri</td><td>Lunch</td><td>240</td><td>228</td><td>12</td><td><span class="b bg">95%</span></td></tr>
+          <tr><td>Sat</td><td>Lunch</td><td>160</td><td>145</td><td>15</td><td><span class="b ba">90.6%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ⑦ WASTE LOGGING -->
+  <div class="section" id="s-waste">
+    <div class="ph"><div class="pt">Waste Logging</div><div class="ps">Record food waste entries for sustainability tracking</div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">New Waste Entry</div>
+        <div class="g2">
+          <div class="frow"><label>Date</label><input type="date" value="2026-02-28"/></div>
+          <div class="frow"><label>Meal Service</label>
+            <select><option>Breakfast</option><option selected>Lunch</option><option>Dinner</option><option>Snack</option></select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Food Item</label><input placeholder="e.g. Rice, Dal, Roti"/></div>
+          <div class="frow"><label>Quantity (kg)</label><input type="number" step="0.1" value="2.5"/></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Waste Category</label>
+            <select><option>Overpreparation</option><option>Spoilage</option><option>Plate Waste</option><option>Preparation Waste</option></select>
+          </div>
+          <div class="frow"><label>Responsible Station</label>
+            <select><option>Main Kitchen</option><option>Counter A</option><option>Counter B</option><option>Bakery</option></select>
+          </div>
+        </div>
+        <div class="frow"><label>Notes / Root Cause</label><textarea placeholder="Describe cause or observations..."></textarea></div>
+        <div class="btn-row"><button class="btn btn-p">Log Waste Entry</button><button class="btn btn-g">Clear Form</button></div>
+      </div>
+      <div class="card">
+        <div class="ct">Recent Waste Entries</div>
+        <table class="tbl">
+          <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td>Feb 28</td><td>Rice</td><td>2.1 kg</td><td><span class="b ba">Overprep</span></td></tr>
+            <tr><td>Feb 28</td><td>Dal</td><td>0.8 kg</td><td><span class="b bb">Plate</span></td></tr>
+            <tr><td>Feb 27</td><td>Bread</td><td>3.5 kg</td><td><span class="b br">Spoilage</span></td></tr>
+            <tr><td>Feb 27</td><td>Curry</td><td>1.2 kg</td><td><span class="b ba">Overprep</span></td></tr>
+            <tr><td>Feb 26</td><td>Salad</td><td>0.6 kg</td><td><span class="b bb">Plate</span></td></tr>
+            <tr><td>Feb 26</td><td>Roti</td><td>4.0 kg</td><td><span class="b br">Spoilage</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:14px;padding:12px;background:#0f0f0f;border-radius:5px;border:1px solid var(--border);">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Today's Total Waste</div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--crimson);">12.2 kg</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">↓ 14% below weekly average</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑧ WASTE ANALYTICS -->
+  <div class="section" id="s-wasteanalytics">
+    <div class="ph"><div class="pt">Waste Analytics</div><div class="ps">Trends, patterns and breakdown of food waste</div></div>
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">89 kg</div><div class="sl">Waste This Month</div><div class="sd up">↓ 11% vs last month</div></div>
+      <div class="stat"><div class="sv">3.2 kg</div><div class="sl">Daily Average</div><div class="sd up">↓ 0.4 kg trend</div></div>
+      <div class="stat"><div class="sv">62%</div><div class="sl">Overprep Share</div><div class="sd dn">↑ 4% — review forecast</div></div>
+      <div class="stat"><div class="sv">₹4,450</div><div class="sl">Estimated Cost</div><div class="sd up">↓ ₹600 saved</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Daily Waste (kg) — This Week</div>
+        <div class="barchart" id="waste-chart"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Waste by Category</div>
+        <div style="margin-top:4px;">
+          <div class="fc-row"><div class="fc-l">Overprep</div><div class="fc-bw"><div class="fc-b" style="width:62%;background:var(--crimson);"></div></div><div class="fc-v">62%</div></div>
+          <div class="fc-row"><div class="fc-l">Spoilage</div><div class="fc-bw"><div class="fc-b" style="width:20%;background:var(--rose);"></div></div><div class="fc-v">20%</div></div>
+          <div class="fc-row"><div class="fc-l">Plate Waste</div><div class="fc-bw"><div class="fc-b" style="width:12%;background:#6aadda;"></div></div><div class="fc-v">12%</div></div>
+          <div class="fc-row"><div class="fc-l">Prep Waste</div><div class="fc-bw"><div class="fc-b" style="width:6%;background:#c9a227;"></div></div><div class="fc-v">6%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Waste by Food Item — Top 6</div>
+      <div class="g2">
+        <div>
+          <div class="fc-row"><div class="fc-l">Rice</div><div class="fc-bw"><div class="fc-b" style="width:80%;background:var(--crimson);"></div></div><div class="fc-v">24 kg</div></div>
+          <div class="fc-row"><div class="fc-l">Bread</div><div class="fc-bw"><div class="fc-b" style="width:62%;background:var(--rose);"></div></div><div class="fc-v">18.6 kg</div></div>
+          <div class="fc-row"><div class="fc-l">Dal</div><div class="fc-bw"><div class="fc-b" style="width:44%;background:#6aadda;"></div></div><div class="fc-v">13.2 kg</div></div>
+        </div>
+        <div>
+          <div class="fc-row"><div class="fc-l">Curry</div><div class="fc-bw"><div class="fc-b" style="width:36%;background:#c9a227;"></div></div><div class="fc-v">10.8 kg</div></div>
+          <div class="fc-row"><div class="fc-l">Salad</div><div class="fc-bw"><div class="fc-b" style="width:24%;background:#5dbb8e;"></div></div><div class="fc-v">7.2 kg</div></div>
+          <div class="fc-row"><div class="fc-l">Roti</div><div class="fc-bw"><div class="fc-b" style="width:18%;background:#888;"></div></div><div class="fc-v">5.4 kg</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑨ DEMAND FORECAST -->
+  <div class="section" id="s-forecast">
+    <div class="ph"><div class="pt">Demand Forecast</div><div class="ps">ML-powered crowd and meal demand predictions</div></div>
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">1,340</div><div class="sl">Predicted Tomorrow</div><div class="sd up">↑ 4.4% vs today</div></div>
+      <div class="stat"><div class="sv">87%</div><div class="sl">Forecast Accuracy</div><div class="sd up">Last 30 days avg</div></div>
+      <div class="stat"><div class="sv">High</div><div class="sl">Tomorrow Risk Level</div><div class="sd dn">Peak at 12:30</div></div>
+      <div class="stat"><div class="sv">Wed</div><div class="sl">Highest Demand Day</div><div class="sd">Next week</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">7-Day Demand Forecast</div>
+      <div style="display:flex;align-items:flex-end;gap:14px;margin-top:4px;">
+        <div style="display:flex;flex-direction:column;justify-content:space-between;height:180px;font-size:9px;color:var(--muted);text-align:right;padding-right:8px;padding-top:4px;">
+          <span>1600</span><span>1200</span><span>800</span><span>400</span><span>0</span>
+        </div>
+        <div style="flex:1;" id="forecast-chart"></div>
+      </div>
+      <div class="legend" style="margin-top:12px;">
+        <div class="leg"><div class="ld" style="background:var(--crimson)"></div>Forecasted</div>
+        <div class="leg"><div class="ld" style="background:#6aadda;opacity:0.6"></div>Confidence Band</div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Slot-Level Forecast — Tomorrow</div>
+        <div class="fc-row"><div class="fc-l">08:00</div><div class="fc-bw"><div class="fc-b" style="width:55%;background:var(--rose);"></div></div><div class="fc-v">44</div><div class="fc-d" style="color:var(--muted);">Low</div></div>
+        <div class="fc-row"><div class="fc-l">12:00</div><div class="fc-bw"><div class="fc-b" style="width:100%;background:var(--crimson);"></div></div><div class="fc-v">80</div><div class="fc-d" style="color:var(--crimson);">Full</div></div>
+        <div class="fc-row"><div class="fc-l">12:30</div><div class="fc-bw"><div class="fc-b" style="width:96%;background:var(--crimson);"></div></div><div class="fc-v">77</div><div class="fc-d" style="color:var(--crimson);">Full</div></div>
+        <div class="fc-row"><div class="fc-l">13:00</div><div class="fc-bw"><div class="fc-b" style="width:72%;background:#c9a227;"></div></div><div class="fc-v">58</div><div class="fc-d" style="color:#c9a227;">High</div></div>
+        <div class="fc-row"><div class="fc-l">19:00</div><div class="fc-bw"><div class="fc-b" style="width:60%;background:var(--rose);"></div></div><div class="fc-v">48</div><div class="fc-d" style="color:var(--muted);">Mod</div></div>
+        <div class="fc-row"><div class="fc-l">19:30</div><div class="fc-bw"><div class="fc-b" style="width:38%;background:#6aadda;"></div></div><div class="fc-v">30</div><div class="fc-d" style="color:var(--muted);">Low</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">Influencing Factors</div>
+        <div class="rec" style="margin-bottom:10px;">
+          <div class="rec-ic">📅</div>
+          <div><div class="rec-t">Academic Schedule</div><div class="rec-d">Monday post-exam week — higher than average student turnout predicted.</div></div>
+        </div>
+        <div class="rec" style="margin-bottom:10px;">
+          <div class="rec-ic">🌦</div>
+          <div><div class="rec-t">Weather Signal</div><div class="rec-d">Rainy forecast for Tuesday — expected 8% increase in indoor dining demand.</div></div>
+        </div>
+        <div class="rec">
+          <div class="rec-ic">📈</div>
+          <div><div class="rec-t">Historical Pattern</div><div class="rec-d">Wed/Thu consistently 15–20% above weekly average based on 6-month data.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑩ PREP RECOMMENDATIONS -->
+  <div class="section" id="s-recos">
+    <div class="ph"><div class="pt">Preparation Recommendations</div><div class="ps">AI-driven suggestions to minimize waste and meet demand</div></div>
+    <div class="g3" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">94%</div><div class="sl">Expected Accuracy</div><div class="sd up">If followed</div></div>
+      <div class="stat"><div class="sv">−18%</div><div class="sl">Projected Waste Reduction</div><div class="sd up">vs current pattern</div></div>
+      <div class="stat"><div class="sv">₹2,100</div><div class="sl">Estimated Daily Savings</div><div class="sd up">Based on waste cost</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">Tomorrow's Preparation Plan — Feb 29, 2026</div>
+      <table class="tbl" style="margin-bottom:0;">
+        <thead><tr><th>Meal</th><th>Item</th><th>Recommended Qty</th><th>Last Prep</th><th>Confidence</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Lunch</td><td>Rice</td><td>45 kg</td><td>50 kg</td><td><span class="b bg">91%</span></td><td><span class="b bg">Reduce ↓</span></td></tr>
+          <tr><td>Lunch</td><td>Dal</td><td>38 kg</td><td>35 kg</td><td><span class="b bg">88%</span></td><td><span class="b ba">Increase ↑</span></td></tr>
+          <tr><td>Lunch</td><td>Roti</td><td>600 pcs</td><td>650 pcs</td><td><span class="b bg">85%</span></td><td><span class="b bg">Reduce ↓</span></td></tr>
+          <tr><td>Lunch</td><td>Veg Curry</td><td>30 kg</td><td>28 kg</td><td><span class="b ba">76%</span></td><td><span class="b ba">Increase ↑</span></td></tr>
+          <tr><td>Dinner</td><td>Rice</td><td>20 kg</td><td>22 kg</td><td><span class="b bg">90%</span></td><td><span class="b bg">Reduce ↓</span></td></tr>
+          <tr><td>Dinner</td><td>Soup</td><td>40 L</td><td>40 L</td><td><span class="b bg">93%</span></td><td><span class="b bb">Maintain</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Key Recommendations</div>
+        <div class="rec">
+          <div class="rec-ic">🍚</div>
+          <div><div class="rec-t">Reduce Rice by 10%</div><div class="rec-d">Forecast indicates 8% lower lunch turnout on Monday vs last week. Prep 45kg instead of 50kg.</div></div>
+        </div>
+        <div class="rec">
+          <div class="rec-ic">⚠️</div>
+          <div><div class="rec-t">Increase Dal Quantity</div><div class="rec-d">Dal consistently runs short on Mon/Tue. Recommend buffering 10% above forecast.</div></div>
+        </div>
+        <div class="rec">
+          <div class="rec-ic">📦</div>
+          <div><div class="rec-t">Stagger Dinner Prep</div><div class="rec-d">Prepare dinner in 2 batches — 70% at 6:30PM, 30% replenish at 7:30PM based on real-time demand.</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Confidence by Food Category</div>
+        <div class="fc-row"><div class="fc-l">Grains</div><div class="fc-bw"><div class="fc-b" style="width:91%;background:var(--crimson);"></div></div><div class="fc-v">91%</div></div>
+        <div class="fc-row"><div class="fc-l">Protein</div><div class="fc-bw"><div class="fc-b" style="width:84%;background:var(--rose);"></div></div><div class="fc-v">84%</div></div>
+        <div class="fc-row"><div class="fc-l">Vegetables</div><div class="fc-bw"><div class="fc-b" style="width:78%;background:#6aadda;"></div></div><div class="fc-v">78%</div></div>
+        <div class="fc-row"><div class="fc-l">Bread</div><div class="fc-bw"><div class="fc-b" style="width:87%;background:#c9a227;"></div></div><div class="fc-v">87%</div></div>
+        <div class="fc-row"><div class="fc-l">Beverages</div><div class="fc-bw"><div class="fc-b" style="width:95%;background:#5dbb8e;"></div></div><div class="fc-v">95%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑪ INCIDENT LOG -->
+  <div class="section" id="s-incidents">
+    <div class="ph"><div class="pt">Incident Log Viewer</div><div class="ps">System alerts, violations and anomalies</div></div>
+    <div class="g4" style="margin-bottom:18px;">
+      <div class="stat"><div class="sv">3</div><div class="sl">Critical Today</div><div class="sd dn">↑ 1 vs yesterday</div></div>
+      <div class="stat"><div class="sv">8</div><div class="sl">Medium This Week</div><div class="sd up">↓ 2</div></div>
+      <div class="stat"><div class="sv">21</div><div class="sl">Total This Month</div><div class="sd up">↓ 6 vs last month</div></div>
+      <div class="stat"><div class="sv">2</div><div class="sl">Unresolved</div><div class="sd dn">Needs attention</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;">
+        <div class="frow" style="flex:1;min-width:160px;margin:0;"><label>Search</label><input style="margin:0;" placeholder="Search incidents..."/></div>
+        <div class="frow" style="min-width:120px;margin:0;"><label>Severity</label><select style="margin:0;"><option>All</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+        <div class="frow" style="min-width:130px;margin:0;"><label>Category</label><select style="margin:0;"><option>All</option><option>Overbooking</option><option>Waste</option><option>Fairness</option><option>Forecast</option><option>System</option></select></div>
+        <button class="btn btn-p" style="margin-bottom:1px;">Filter</button>
+      </div>
+      <div>
+        <div class="inc"><div class="inc-dot h"></div><div class="inc-id">INC-041</div><div class="inc-msg">Slot overbooking detected: 12:00 slot exceeded capacity by 3 users. Auto-blocked further bookings.</div><div class="inc-time">10:12 today</div><span class="b br" style="flex-shrink:0;margin-left:8px;">Unresolved</span></div>
+        <div class="inc"><div class="inc-dot h"></div><div class="inc-id">INC-040</div><div class="inc-msg">Fairness rule violation: user_4821 exceeded monthly booking limit. Booking blocked by system.</div><div class="inc-time">09:55 today</div><span class="b bg" style="flex-shrink:0;margin-left:8px;">Resolved</span></div>
+        <div class="inc"><div class="inc-dot m"></div><div class="inc-id">INC-039</div><div class="inc-msg">Waste threshold exceeded: 8.2 kg logged for lunch service on Feb 27. Review preparation quantities.</div><div class="inc-time">08:44 today</div><span class="b bg" style="flex-shrink:0;margin-left:8px;">Noted</span></div>
+        <div class="inc"><div class="inc-dot h"></div><div class="inc-id">INC-038</div><div class="inc-msg">Demand forecast deviation >20% for Thursday dinner — actual 187 vs predicted 148.</div><div class="inc-time">Yesterday</div><span class="b ba" style="flex-shrink:0;margin-left:8px;">Reviewing</span></div>
+        <div class="inc"><div class="inc-dot m"></div><div class="inc-id">INC-037</div><div class="inc-msg">No-show rate spiked to 18% for Friday lunch. Waitlist promotion triggered.</div><div class="inc-time">Feb 27</div><span class="b bg" style="flex-shrink:0;margin-left:8px;">Resolved</span></div>
+        <div class="inc"><div class="inc-dot l"></div><div class="inc-id">INC-036</div><div class="inc-msg">Fairness score dipped to 94.1% for student group B due to high-demand slot saturation.</div><div class="inc-time">Feb 26</div><span class="b bg" style="flex-shrink:0;margin-left:8px;">Resolved</span></div>
+        <div class="inc"><div class="inc-dot l"></div><div class="inc-id">INC-035</div><div class="inc-msg">System latency warning: booking API response >2s during 12:00 peak slot rush.</div><div class="inc-time">Feb 26</div><span class="b bg" style="flex-shrink:0;margin-left:8px;">Resolved</span></div>
+        <div class="inc"><div class="inc-dot h"></div><div class="inc-id">INC-034</div><div class="inc-msg">Group booking cap violated: 12 slots reserved by single org account. Manual review required.</div><div class="inc-time">Feb 25</div><span class="b bg" style="flex-shrink:0;margin-left:8px;">Resolved</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+        <span style="font-size:10px;color:var(--muted);">Showing 8 of 41 incidents</span>
+        <div style="display:flex;gap:8px;"><button class="btn btn-g">← Prev</button><button class="btn btn-g">Next →</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑫ DATA EXPORT -->
+  <div class="section" id="s-export">
+    <div class="ph"><div class="pt">Data Export</div><div class="ps">Download system data in various formats</div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Export Configuration</div>
+        <div class="frow"><label>Dataset</label>
+          <select>
+            <option>Booking Audit Log</option><option>Waste Log</option><option>Fairness Report</option>
+            <option>Demand Forecast Data</option><option>Prep vs Served Data</option>
+            <option>Incident Log</option><option>Full Analytics Export</option>
+          </select>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>From Date</label><input type="date" value="2026-02-01"/></div>
+          <div class="frow"><label>To Date</label><input type="date" value="2026-02-28"/></div>
+        </div>
+        <div class="frow"><label>Format</label>
+          <select><option>CSV</option><option>JSON</option><option>Excel (.xlsx)</option><option>PDF Report</option></select>
+        </div>
+        <div class="frow"><label>Include Fields</label>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+            <script>['Timestamps','User IDs','Slot Details','Status Codes','Admin Notes','IP Addresses'].forEach(f=>{document.write(`<label style="flex-direction:row;align-items:center;gap:7px;cursor:pointer;text-transform:none;color:#aaa;font-size:11px;"><input type="checkbox" checked style="width:auto;margin:0;padding:0;border:none;background:transparent;"/> ${f}</label>`)})</script>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:6px;"><button class="btn btn-e" onclick="simulateExport()">⬇ Export Data</button></div>
+      </div>
+      <div class="card">
+        <div class="ct">Quick Export Packages</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="exp-bar"><div><div class="exp-t">Daily Summary Report</div><div class="exp-s">Today's bookings, waste & alerts</div></div><button class="btn btn-e" onclick="simulateExport()">Export CSV</button></div>
+          <div class="exp-bar"><div><div class="exp-t">Weekly Analytics Bundle</div><div class="exp-s">Feb 22 – Feb 28, all modules</div></div><button class="btn btn-e" onclick="simulateExport()">Export ZIP</button></div>
+          <div class="exp-bar"><div><div class="exp-t">Fairness Compliance Report</div><div class="exp-s">Equity metrics & violation log</div></div><button class="btn btn-e" onclick="simulateExport()">Export PDF</button></div>
+          <div class="exp-bar"><div><div class="exp-t">Waste Sustainability Report</div><div class="exp-s">February full month waste data</div></div><button class="btn btn-e" onclick="simulateExport()">Export XLSX</button></div>
+          <div class="exp-bar"><div><div class="exp-t">Incident Log Archive</div><div class="exp-s">All incidents — last 90 days</div></div><button class="btn btn-e" onclick="simulateExport()">Export JSON</button></div>
+        </div>
+      </div>
+    </div>
+    <div id="export-toast" style="display:none;background:#0a2018;border:1px solid #1a4030;color:#5dbb8e;padding:12px 18px;border-radius:6px;font-size:11px;letter-spacing:0.06em;">✓ Export prepared — download will begin shortly</div>
+  </div>
+
+</main>
+
+<script>
+  // Navigation
+  function nav(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById('s-'+id).classList.add('active');
+    event.currentTarget.classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // Render Bar Chart
+  function renderBarChart(containerId, data, maxVal){
+    const el = document.getElementById(containerId);
+    if(!el) return;
+    el.innerHTML = '';
+    data.forEach(d=>{
+      const g = document.createElement('div');
+      g.className = 'bg-group';
+      const bars = document.createElement('div');
+      bars.className = 'bars';
+      d.values.forEach((v,i)=>{
+        const b = document.createElement('div');
+        b.className = 'bar';
+        const pct = Math.round((v/maxVal)*148);
+        b.style.height = pct+'px';
+        b.style.background = d.colors[i];
+        b.title = d.labels[i]+': '+v;
+        bars.appendChild(b);
+      });
+      const lbl = document.createElement('div');
+      lbl.className = 'blabel';
+      lbl.textContent = d.day;
+      g.appendChild(bars);
+      g.appendChild(lbl);
+      el.appendChild(g);
+    });
+  }
+
+  // Overview chart
+  renderBarChart('overview-chart',[
+    {day:'Mon',values:[220,18],colors:['#B1464A','#BD6467'],labels:['Bookings','Cancels']},
+    {day:'Tue',values:[245,22],colors:['#B1464A','#BD6467'],labels:['Bookings','Cancels']},
+    {day:'Wed',values:[268,30],colors:['#B1464A','#BD6467'],labels:['Bookings','Cancels']},
+    {day:'Thu',values:[290,14],colors:['#B1464A','#BD6467'],labels:['Bookings','Cancels']},
+    {day:'Fri',values:[310,20],colors:['#B1464A','#BD6467'],labels:['Bookings','Cancels']},
+    {day:'Sat',values:[188,8],colors:['#B1464A','#BD6467'],labels:['Bookings','Cancels']},
+  ],320);
+
+  // Prep vs Served
+  renderBarChart('ps-chart',[
+    {day:'Mon',values:[180,162],colors:['#B1464A','#BD646788'],labels:['Prep','Served']},
+    {day:'Tue',values:[210,198],colors:['#B1464A','#BD646788'],labels:['Prep','Served']},
+    {day:'Wed',values:[195,170],colors:['#B1464A','#BD646788'],labels:['Prep','Served']},
+    {day:'Thu',values:[220,215],colors:['#B1464A','#BD646788'],labels:['Prep','Served']},
+    {day:'Fri',values:[240,228],colors:['#B1464A','#BD646788'],labels:['Prep','Served']},
+    {day:'Sat',values:[160,145],colors:['#B1464A','#BD646788'],labels:['Prep','Served']},
+  ],260);
+
+  // Waste chart
+  renderBarChart('waste-chart',[
+    {day:'Mon',values:[18],colors:['#B1464A'],labels:['Waste kg']},
+    {day:'Tue',values:[12],colors:['#BD6467'],labels:['Waste kg']},
+    {day:'Wed',values:[25],colors:['#B1464A'],labels:['Waste kg']},
+    {day:'Thu',values:[5],colors:['#5dbb8e'],labels:['Waste kg']},
+    {day:'Fri',values:[14],colors:['#BD6467'],labels:['Waste kg']},
+    {day:'Sat',values:[15],colors:['#B1464A'],labels:['Waste kg']},
+  ],30);
+
+  // Equity chart
+  renderBarChart('equity-chart',[
+    {day:'Mon',values:[78,14,8],colors:['#B1464A','#BD6467','#6aadda'],labels:['Students','Faculty','Staff']},
+    {day:'Tue',values:[76,15,9],colors:['#B1464A','#BD6467','#6aadda'],labels:['Students','Faculty','Staff']},
+    {day:'Wed',values:[80,12,8],colors:['#B1464A','#BD6467','#6aadda'],labels:['Students','Faculty','Staff']},
+    {day:'Thu',values:[77,14,9],colors:['#B1464A','#BD6467','#6aadda'],labels:['Students','Faculty','Staff']},
+    {day:'Fri',values:[79,13,8],colors:['#B1464A','#BD6467','#6aadda'],labels:['Students','Faculty','Staff']},
+  ],100);
+
+  // Forecast chart
+  const fcEl = document.getElementById('forecast-chart');
+  if(fcEl){
+    const days=[{d:'Mon',v:1120},{d:'Tue',v:1340},{d:'Wed',v:1580},{d:'Thu',v:1420},{d:'Fri',v:1260},{d:'Sat',v:980},{d:'Sun',v:860}];
+    const max=1600;
+    fcEl.style.display='flex';fcEl.style.alignItems='flex-end';fcEl.style.gap='10px';fcEl.style.height='180px';
+    days.forEach(({d,v})=>{
+      const g=document.createElement('div');g.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;';
+      const bar=document.createElement('div');
+      bar.style.cssText=`width:100%;border-radius:3px 3px 0 0;background:var(--crimson);height:${Math.round((v/max)*168)}px;transition:opacity 0.15s;cursor:pointer;`;
+      bar.onmouseenter=()=>bar.style.opacity='0.75';bar.onmouseleave=()=>bar.style.opacity='1';
+      bar.title=d+': '+v+' meals forecasted';
+      const lbl=document.createElement('div');lbl.style.cssText='font-size:9px;color:var(--muted);margin-top:6px;';lbl.textContent=d;
+      const val=document.createElement('div');val.style.cssText='font-size:9px;color:#555;';val.textContent=v;
+      g.appendChild(bar);g.appendChild(val);g.appendChild(lbl);fcEl.appendChild(g);
+    });
+  }
+
+  // Slot grid
+  const slots=[
+    {t:'08:00–08:30',c:40,fill:55},{t:'12:00–12:30',c:80,fill:98},{t:'12:30–13:00',c:80,fill:93},
+    {t:'13:00–13:30',c:60,fill:66},{t:'19:00–19:30',c:50,fill:74},{t:'19:30–20:00',c:50,fill:22},
+  ];
+  const sg=document.getElementById('slot-grid');
+  if(sg) slots.forEach(s=>{
+    sg.innerHTML+=`<div class="slot-item"><div class="st">${s.t}</div><div class="sc">Cap: ${s.c}</div><div class="sbar"><div class="sbar-f" style="width:${s.fill}%"></div></div><div class="sc">${s.fill}% filled</div></div>`;
+  });
+
+  // Heatmap
+  const hm=document.getElementById('heatmap');
+  if(hm){
+    const ddays=['M','T','W','T','F','S','S'];
+    const vals=[[60,80,95,70,85,40,30],[90,100,100,95,100,55,45],[75,88,92,80,88,48,35],[50,65,78,60,72,35,28],[55,70,82,65,75,38,30],[40,55,68,50,60,30,22],[35,48,60,44,55,28,18]];
+    const slotLabels=['8am','10am','12pm','2pm','4pm','6pm','8pm'];
+    ddays.forEach((d,i)=>{
+      const col=document.createElement('div');
+      col.style.cssText='display:flex;flex-direction:column;gap:3px;align-items:center;';
+      col.innerHTML=`<div style="font-size:9px;color:var(--muted);margin-bottom:2px;">${d}</div>`;
+      vals.forEach((row,j)=>{
+        const v=row[i];
+        const intensity=Math.round((v/100)*0.8+0.1);
+        const cell=document.createElement('div');
+        cell.style.cssText=`width:28px;height:24px;border-radius:3px;background:rgba(177,70,74,${intensity});cursor:default;`;
+        cell.title=`${ddays[i]} ${slotLabels[j]}: ${v}% demand`;
+        col.appendChild(cell);
+      });
+      hm.appendChild(col);
+    });
+    // Add y-labels
+    const ylabels=document.createElement('div');
+    ylabels.style.cssText='display:flex;flex-direction:column;gap:3px;justify-content:flex-start;padding-top:22px;';
+    slotLabels.forEach(l=>{ylabels.innerHTML+=`<div style="font-size:9px;color:var(--muted);height:24px;display:flex;align-items:center;">${l}</div>`;});
+    hm.parentNode.insertBefore(ylabels,hm);
+  }
+
+  // Export simulation
+  function simulateExport(){
+    const toast=document.getElementById('export-toast');
+    if(toast){toast.style.display='block';setTimeout(()=>toast.style.display='none',3000);}
+  }
+</script>
+</body>
+</html>
