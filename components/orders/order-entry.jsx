@@ -59,17 +59,29 @@ export function OrderEntry({ onAdd }) {
                         <div className="p-8 text-center text-gray-400 text-sm">No items found</div>
                     ) : (
                         <div className="space-y-1">
-                            {filteredItems.map(item => (
+                            {filteredItems.map(item => {
+                                const isAvailable = item.available !== false;
+                                return (
                                 <Button
                                     key={item.id}
                                     variant="ghost"
-                                    onClick={() => handleSelect(item)}
-                                    className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent hover:border-gray-100 ${selectedItem?.id === item.id ? "bg-white shadow-sm border-emerald-100 ring-1 ring-emerald-500/20" : "hover:bg-white hover:shadow-sm"}`}
+                                    onClick={() => isAvailable && handleSelect(item)}
+                                    className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent hover:border-gray-100 ${
+                                        selectedItem?.id === item.id && isAvailable
+                                            ? "bg-white shadow-sm border-emerald-100 ring-1 ring-emerald-500/20" 
+                                            : !isAvailable 
+                                                ? "opacity-50 cursor-not-allowed hover:bg-transparent" 
+                                                : "hover:bg-white hover:shadow-sm"
+                                    }`}
                                 >
-                                    <span className="font-medium text-gray-700">{item.name}</span>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2.5 h-2.5 rounded-sm ${isAvailable ? 'bg-emerald-500' : 'bg-[#B1464A]'}`} title={isAvailable ? "Available" : "Not Available"} />
+                                        <span className="font-medium text-gray-700">{item.name}</span>
+                                    </div>
                                     <span className="text-gray-500 font-medium">Rs.{item.price.toLocaleString()}</span>
                                 </Button>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>

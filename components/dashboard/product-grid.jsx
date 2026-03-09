@@ -72,11 +72,16 @@ export function ProductGrid({ items }) {
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-100">
-                            {products.map((product) => (
-                                <TableRow key={product.id} className="hover:bg-gray-50/80 transition-colors group cursor-pointer">
+                            {products.map((product) => {
+                                const isAvailable = product.available !== false;
+                                return (
+                                <TableRow key={product.id} className={`transition-colors group ${isAvailable ? 'hover:bg-gray-50/80 cursor-pointer' : 'opacity-50 cursor-not-allowed hover:bg-transparent'}`}>
                                     <TableCell className="px-6 py-4 align-middle">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-gray-800 text-base mb-1">{product.name}</span>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`w-2.5 h-2.5 rounded-sm ${isAvailable ? 'bg-emerald-500' : 'bg-[#B1464A]'}`} title={isAvailable ? "Available" : "Not Available"} />
+                                                <span className="font-bold text-gray-800 text-base">{product.name}</span>
+                                            </div>
                                             <span className="text-xs text-gray-500 inline-block bg-gray-100 px-2 py-0.5 rounded-full w-fit">
                                                 {product.category}
                                             </span>
@@ -86,7 +91,8 @@ export function ProductGrid({ items }) {
                                         <span className="font-bold text-emerald-600 text-lg">Rs. {product.price}</span>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                                )}
+                            )}
                         </TableBody>
                     </Table>
                 </div>

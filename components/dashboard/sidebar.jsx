@@ -38,9 +38,9 @@ export function Sidebar() {
         { icon: LayoutDashboard, label: "Dashboard", href: "/staff/dashboard" },
         { icon: ShoppingBag, label: "Orders", href: "/staff/orders" },
         { icon: ChefHat, label: "Menu Management", href: "/staff/menu" },
-        { icon: UserPlus, label: "Register Cashier", href: "/staff/cashiers" },
+        ...(profile.role !== "operator" ? [{ icon: UserPlus, label: "Register Cashier", href: "/staff/cashiers" }] : []),
         { icon: FileText, label: "Sales Reports", href: "/staff/sales" },
-        { icon: Box, label: "Inventory Reports", href: "/staff/inventory" },
+
         { icon: Users, label: "Customer Directory", href: "/staff/customers" },
     ];
 
@@ -52,7 +52,7 @@ export function Sidebar() {
                     <div className="w-8 h-8 bg-[#B1464A] rounded-lg flex items-center justify-center text-white font-bold">
                         <div className="w-3 h-3 bg-white rounded-full"></div>
                     </div>
-                    <span className="font-bold text-lg tracking-tight">Foodcode</span>
+                    <span className="font-bold text-lg tracking-tight">seeFood</span>
                 </div>
 
 
