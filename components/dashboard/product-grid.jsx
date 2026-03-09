@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export function ProductGrid({ items }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [itemAvailability, setItemAvailability] = useState({});
+
+    // Load availability from localStorage on mount
+    useEffect(() => {
+        const savedAvailability = localStorage.getItem("menu_item_availability");
+        if (savedAvailability) {
+            try {
+                setItemAvailability(JSON.parse(savedAvailability));
+            } catch (error) {
+                console.warn("Failed to load availability data", error);
+            }
+        }
+
+        // Listen for storage changes (from other tabs/windows)
+        const handleStorageChange = (e) => {
+            if (e.key === "menu_item_availability" && e.newValue) {
+                try {
+                    setItemAvailability(JSON.parse(e.newValue));
+                } catch (error) {
+                    console.warn("Failed to update availability from storage", error);
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
 
     const defaultProducts = [
         // ... (keep existing mocks if needed, but we rely on props mostly now)
@@ -73,7 +100,8 @@ export function ProductGrid({ items }) {
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-100">
                             {products.map((product) => {
-                                const isAvailable = product.available !== false;
+                                // Check availability: use stored value if exists, otherwise use product.available
+                                const isAvailable = itemAvailability[product.id] !== false && product.available !== false;
                                 return (
                                 <TableRow key={product.id} className={`transition-colors group ${isAvailable ? 'hover:bg-gray-50/80 cursor-pointer' : 'opacity-50 cursor-not-allowed hover:bg-transparent'}`}>
                                     <TableCell className="px-6 py-4 align-middle">

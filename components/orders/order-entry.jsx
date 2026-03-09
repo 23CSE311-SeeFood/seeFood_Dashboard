@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus, Minus, ScanBarcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,41 @@ export function OrderEntry({ onAdd }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [itemAvailability, setItemAvailability] = useState({});
 
-    // Filter available items
+    // Load availability from localStorage on mount
+    useEffect(() => {
+        const savedAvailability = localStorage.getItem("menu_item_availability");
+        if (savedAvailability) {
+            try {
+                setItemAvailability(JSON.parse(savedAvailability));
+            } catch (error) {
+                console.warn("Failed to load availability data", error);
+            }
+        }
+
+        // Listen for storage changes (from other tabs/windows)
+        const handleStorageChange = (e) => {
+            if (e.key === "menu_item_availability" && e.newValue) {
+                try {
+                    setItemAvailability(JSON.parse(e.newValue));
+                } catch (error) {
+                    console.warn("Failed to update availability from storage", error);
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
+
+    // Filter items by search (include all items, both available and unavailable)
     const items = menuItems;
 
-    const filteredItems = items.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredItems = items.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
+    });
 
     const handleSelect = (item) => {
         setSelectedItem(item);
@@ -60,22 +88,27 @@ export function OrderEntry({ onAdd }) {
                     ) : (
                         <div className="space-y-1">
                             {filteredItems.map(item => {
-                                const isAvailable = item.available !== false;
+                                // Check availability from both localStorage and item property
+                                const isAvailable = itemAvailability[item.id] !== false && item.available !== false;
                                 return (
                                 <Button
                                     key={item.id}
                                     variant="ghost"
                                     onClick={() => isAvailable && handleSelect(item)}
-                                    className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent hover:border-gray-100 ${
+                                    disabled={!isAvailable}
+                                    className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent transition-all ${
                                         selectedItem?.id === item.id && isAvailable
                                             ? "bg-white shadow-sm border-emerald-100 ring-1 ring-emerald-500/20" 
                                             : !isAvailable 
-                                                ? "opacity-50 cursor-not-allowed hover:bg-transparent" 
+                                                ? "opacity-60 cursor-not-allowed hover:bg-transparent" 
                                                 : "hover:bg-white hover:shadow-sm"
                                     }`}
                                 >
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-2.5 h-2.5 rounded-sm ${isAvailable ? 'bg-emerald-500' : 'bg-[#B1464A]'}`} title={isAvailable ? "Available" : "Not Available"} />
+                                        <div 
+                                            className={`w-2.5 h-2.5 rounded-sm ${isAvailable ? 'bg-emerald-500' : 'bg-[#B1464A]'}`} 
+                                            title={isAvailable ? "Available" : "Not Available"}
+                                        />
                                         <span className="font-medium text-gray-700">{item.name}</span>
                                     </div>
                                     <span className="text-gray-500 font-medium">Rs.{item.price.toLocaleString()}</span>
