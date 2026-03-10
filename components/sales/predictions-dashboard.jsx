@@ -2,45 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
+import { PredictionsTrendChart } from "@/components/sales/predictions-trend-chart";
 
 export function PredictionsDashboard({ next7Days, categoryPrediction }) {
-    const renderTrendChart = (data) => {
-        const max = Math.max(...data.map(d => d.predicted));
-
-        return (
-            <Card className="p-6 h-full flex flex-col overflow-hidden">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 flex-shrink-0">Sales Forecast (Next 7 Days)</h3>
-                <div className="flex-1 flex items-end justify-between gap-2 overflow-hidden">
-                    {data.map((item, idx) => {
-                        const height = (item.predicted / max) * 100;
-                        const trendColor = item.trend === "up" ? "from-emerald-500 to-green-400" : 
-                                        item.trend === "down" ? "from-red-500 to-pink-400" : 
-                                        "from-blue-500 to-cyan-400";
-                        
-                        return (
-                            <div key={idx} className="flex flex-col items-center gap-2 flex-1 h-full">
-                                <div className="flex-1" />
-                                <div
-                                    className={`w-full bg-gradient-to-t ${trendColor} rounded-t-lg transition-all hover:opacity-80 relative`}
-                                    style={{ height: `${height}%`, minHeight: "10px" }}
-                                    title={`Predicted: ₹${item.predicted.toLocaleString()}`}
-                                >
-                                    {item.trend === "up" && (
-                                        <TrendingUp className="w-3 h-3 text-white absolute -top-4 right-1" />
-                                    )}
-                                </div>
-                                <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">{item.day}</span>
-                                <span className="text-xs text-gray-500 font-medium whitespace-nowrap">
-                                    ₹{(item.predicted / 1000).toFixed(0)}k
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </Card>
-        );
-    };
 
     return (
         <div className="flex flex-col gap-4 h-full overflow-hidden">
@@ -55,7 +20,7 @@ export function PredictionsDashboard({ next7Days, categoryPrediction }) {
 
             {/* Trend Chart */}
             <div className="flex-1 overflow-hidden">
-                {renderTrendChart(next7Days)}
+                <PredictionsTrendChart data={next7Days} />
             </div>
 
             {/* Category Predictions */}

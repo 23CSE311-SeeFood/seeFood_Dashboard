@@ -19,7 +19,7 @@ export default function SalesPage() {
             {/* Header with Download Button */}
             <div className="flex justify-between items-center flex-shrink-0">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Sales Report</h1>
+                    <h1 className="text-3xl font-bold text-gray-800">Sales</h1>
                     <p className="text-gray-500 text-sm mt-1">View sales analytics and predictions</p>
                 </div>
                 <button
