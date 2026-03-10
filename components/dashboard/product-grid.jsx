@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export function ProductGrid({ items }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [itemAvailability, setItemAvailability] = useState({});
+
+    // Load availability from localStorage on mount
+    useEffect(() => {
+        const savedAvailability = localStorage.getItem("menu_item_availability");
+        if (savedAvailability) {
+            try {
+                setItemAvailability(JSON.parse(savedAvailability));
+            } catch (error) {
+                console.warn("Failed to load availability data", error);
+            }
+        }
+
+        // Listen for storage changes (from other tabs/windows)
+        const handleStorageChange = (e) => {
+            if (e.key === "menu_item_availability" && e.newValue) {
+                try {
+                    setItemAvailability(JSON.parse(e.newValue));
+                } catch (error) {
+                    console.warn("Failed to update availability from storage", error);
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
 
     const defaultProducts = [
         // ... (keep existing mocks if needed, but we rely on props mostly now)
@@ -72,11 +99,17 @@ export function ProductGrid({ items }) {
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-100">
-                            {products.map((product) => (
-                                <TableRow key={product.id} className="hover:bg-gray-50/80 transition-colors group cursor-pointer">
+                            {products.map((product) => {
+                                // Check availability: use stored value if exists, otherwise use product.available
+                                const isAvailable = itemAvailability[product.id] !== false && product.available !== false;
+                                return (
+                                <TableRow key={product.id} className={`transition-colors group ${isAvailable ? 'hover:bg-gray-50/80 cursor-pointer' : 'opacity-50 cursor-not-allowed hover:bg-transparent'}`}>
                                     <TableCell className="px-6 py-4 align-middle">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-gray-800 text-base mb-1">{product.name}</span>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" title={isAvailable ? "Available" : "Not Available - Click disabled"} />
+                                                <span className="font-bold text-gray-800 text-base">{product.name}</span>
+                                            </div>
                                             <span className="text-xs text-gray-500 inline-block bg-gray-100 px-2 py-0.5 rounded-full w-fit">
                                                 {product.category}
                                             </span>
@@ -86,7 +119,8 @@ export function ProductGrid({ items }) {
                                         <span className="font-bold text-emerald-600 text-lg">Rs. {product.price}</span>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                                )}
+                            )}
                         </TableBody>
                     </Table>
                 </div>

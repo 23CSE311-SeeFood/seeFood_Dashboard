@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus, Minus, ScanBarcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,17 +8,45 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import { menuItems } from "@/lib/menu-data";
 
-export function OrderEntry({ onAdd }) {
+export function OrderEntry({ onAdd, items = null }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [itemAvailability, setItemAvailability] = useState({});
 
-    // Filter available items
-    const items = menuItems;
+    // Load availability from localStorage on mount
+    useEffect(() => {
+        const savedAvailability = localStorage.getItem("menu_item_availability");
+        if (savedAvailability) {
+            try {
+                setItemAvailability(JSON.parse(savedAvailability));
+            } catch (error) {
+                console.warn("Failed to load availability data", error);
+            }
+        }
 
-    const filteredItems = items.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        // Listen for storage changes (from other tabs/windows)
+        const handleStorageChange = (e) => {
+            if (e.key === "menu_item_availability" && e.newValue) {
+                try {
+                    setItemAvailability(JSON.parse(e.newValue));
+                } catch (error) {
+                    console.warn("Failed to update availability from storage", error);
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
+
+    // Filter items by search (include all items, both available and unavailable)
+    const menuItemsToUse = items || menuItems;
+
+    const filteredItems = menuItemsToUse.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
+    });
 
     const handleSelect = (item) => {
         setSelectedItem(item);
@@ -59,17 +87,34 @@ export function OrderEntry({ onAdd }) {
                         <div className="p-8 text-center text-gray-400 text-sm">No items found</div>
                     ) : (
                         <div className="space-y-1">
-                            {filteredItems.map(item => (
+                            {filteredItems.map(item => {
+                                // Check availability from both localStorage and item property
+                                const isAvailable = itemAvailability[item.id] !== false && item.available !== false;
+                                return (
                                 <Button
                                     key={item.id}
                                     variant="ghost"
-                                    onClick={() => handleSelect(item)}
-                                    className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent hover:border-gray-100 ${selectedItem?.id === item.id ? "bg-white shadow-sm border-emerald-100 ring-1 ring-emerald-500/20" : "hover:bg-white hover:shadow-sm"}`}
+                                    onClick={() => isAvailable && handleSelect(item)}
+                                    disabled={!isAvailable}
+                                    className={`w-full justify-between p-3 h-auto font-normal rounded-lg text-sm border border-transparent transition-all ${
+                                        selectedItem?.id === item.id && isAvailable
+                                            ? "bg-white shadow-sm border-emerald-100 ring-1 ring-emerald-500/20" 
+                                            : !isAvailable 
+                                                ? "opacity-60 cursor-not-allowed hover:bg-transparent" 
+                                                : "hover:bg-white hover:shadow-sm"
+                                    }`}
                                 >
-                                    <span className="font-medium text-gray-700">{item.name}</span>
+                                    <div className="flex items-center gap-2">
+                                        <div 
+                                            className="w-2.5 h-2.5 rounded-sm bg-emerald-500" 
+                                            title={isAvailable ? "Available" : "Not Available - Click disabled"}
+                                        />
+                                        <span className="font-medium text-gray-700">{item.name}</span>
+                                    </div>
                                     <span className="text-gray-500 font-medium">Rs.{item.price.toLocaleString()}</span>
                                 </Button>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
