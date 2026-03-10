@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import { menuItems } from "@/lib/menu-data";
 
-export function OrderEntry({ onAdd }) {
+export function OrderEntry({ onAdd, items = null }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
@@ -41,9 +41,9 @@ export function OrderEntry({ onAdd }) {
     }, []);
 
     // Filter items by search (include all items, both available and unavailable)
-    const items = menuItems;
+    const menuItemsToUse = items || menuItems;
 
-    const filteredItems = items.filter(item => {
+    const filteredItems = menuItemsToUse.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
     });
@@ -106,8 +106,8 @@ export function OrderEntry({ onAdd }) {
                                 >
                                     <div className="flex items-center gap-2">
                                         <div 
-                                            className={`w-2.5 h-2.5 rounded-sm ${isAvailable ? 'bg-emerald-500' : 'bg-[#B1464A]'}`} 
-                                            title={isAvailable ? "Available" : "Not Available"}
+                                            className="w-2.5 h-2.5 rounded-sm bg-emerald-500" 
+                                            title={isAvailable ? "Available" : "Not Available - Click disabled"}
                                         />
                                         <span className="font-medium text-gray-700">{item.name}</span>
                                     </div>

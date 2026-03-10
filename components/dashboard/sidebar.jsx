@@ -10,7 +10,8 @@ import {
     UserPlus,
     Settings,
     HelpCircle,
-    Plus
+    Plus,
+    Bell
 } from "lucide-react";
 import { useAuth } from "@/components/global/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -38,10 +39,11 @@ export function Sidebar() {
         { icon: LayoutDashboard, label: "Dashboard", href: "/staff/dashboard" },
         { icon: ShoppingBag, label: "Orders", href: "/staff/orders" },
         { icon: ChefHat, label: "Menu Management", href: "/staff/menu" },
-        ...(profile.role !== "operator" ? [{ icon: UserPlus, label: "Register Cashier", href: "/staff/cashiers" }] : []),
+        ...(profile.role === "admin" ? [{ icon: Box, label: "Food Items", href: "/staff/food-items" }] : []),
+        ...(profile.role === "admin" ? [{ icon: UserPlus, label: "Register Cashier", href: "/staff/cashiers" }] : []),
         { icon: FileText, label: "Sales Reports", href: "/staff/sales" },
-
-        { icon: Users, label: "Customer Directory", href: "/staff/customers" },
+        ...(profile.role === "admin" ? [{ icon: Users, label: "Customer Directory", href: "/staff/customers" }] : []),
+        ...(profile.role === "admin" ? [{ icon: Bell, label: "Announcements", href: "/staff/announcements" }] : []),
     ];
 
     return (

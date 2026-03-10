@@ -14,6 +14,40 @@ export default function MenuPage() {
     const router = useRouter();
     const [selectedItem, setSelectedItem] = useState(null);
     const [itemAvailability, setItemAvailability] = useState({});
+    const [allMenuItems, setAllMenuItems] = useState(menuItems);
+
+    // Load merged items from both original and newly added items
+    const loadMergedItems = () => {
+        try {
+            const newItems = localStorage.getItem("food_items");
+            const parsedNewItems = newItems ? JSON.parse(newItems) : [];
+            
+            // Merge: original items + newly added items
+            const merged = [...menuItems, ...parsedNewItems];
+            
+            // Remove duplicates by id
+            const uniqueItems = Array.from(new Map(merged.map(item => [item.id, item])).values());
+            
+            setAllMenuItems(uniqueItems);
+        } catch (error) {
+            console.warn("Failed to load merged items", error);
+            setAllMenuItems(menuItems);
+        }
+    };
+
+    useEffect(() => {
+        loadMergedItems();
+
+        // Listen for changes to food_items in localStorage (from other pages/tabs)
+        const handleStorageChange = (e) => {
+            if (e.key === "food_items" && e.newValue !== null) {
+                loadMergedItems();
+            }
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
 
     // Redirect if not authenticated or not authorized
     useEffect(() => {
@@ -40,7 +74,7 @@ export default function MenuPage() {
     }, [user?.role]);
 
     // Enrich menu items with veg/non-veg tags
-    const enrichedMenuItems = enrichMenuItems(menuItems);
+    const enrichedMenuItems = enrichMenuItems(allMenuItems);
 
     // Handle availability change (operator only)
     const handleAvailabilityChange = (itemId, isAvailable) => {

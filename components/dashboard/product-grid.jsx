@@ -107,7 +107,7 @@ export function ProductGrid({ items }) {
                                     <TableCell className="px-6 py-4 align-middle">
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <div className={`w-2.5 h-2.5 rounded-sm ${isAvailable ? 'bg-emerald-500' : 'bg-[#B1464A]'}`} title={isAvailable ? "Available" : "Not Available"} />
+                                                <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" title={isAvailable ? "Available" : "Not Available - Click disabled"} />
                                                 <span className="font-bold text-gray-800 text-base">{product.name}</span>
                                             </div>
                                             <span className="text-xs text-gray-500 inline-block bg-gray-100 px-2 py-0.5 rounded-full w-fit">
