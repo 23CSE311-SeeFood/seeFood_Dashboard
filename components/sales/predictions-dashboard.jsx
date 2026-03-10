@@ -24,25 +24,25 @@ export function PredictionsDashboard({ next7Days, categoryPrediction }) {
             </div>
 
             {/* Category Predictions */}
-            <div className="flex-1 overflow-hidden flex flex-col">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 flex-shrink-0">Category Forecast</h3>
-                <div className="flex gap-4 overflow-x-hidden flex-1">
+            <div className="flex flex-col flex-shrink-0">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Category Forecast</h3>
+                <div className="flex gap-3 overflow-x-auto">
                     {categoryPrediction.map((cat, idx) => {
                         const growth = ((cat.predicted - cat.current) / cat.current * 100).toFixed(1);
                         const isPositive = growth > 0;
 
                         return (
-                            <Card key={idx} className="p-4 border-l-4 border-l-[#B1464A] hover:shadow-md transition-shadow flex-shrink-0 w-64">
+                            <Card key={idx} className="p-3 border-l-4 border-l-[#B1464A] hover:shadow-md transition-shadow flex-shrink-0 w-64">
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-semibold text-gray-800 text-sm">{cat.category}</h4>
-                                        <div className="flex items-center gap-2 mt-2">
+                                        <div className="flex items-center gap-2 mt-1">
                                             <span className="text-xs text-gray-500">Currently:</span>
                                             <span className="text-sm font-bold text-gray-700">
                                                 ₹{(cat.current / 1000).toFixed(1)}k
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex items-center gap-2 mt-0.5">
                                             <span className="text-xs text-gray-500">Predicted:</span>
                                             <span className="text-sm font-bold text-[#B1464A]">
                                                 ₹{(cat.predicted / 1000).toFixed(1)}k
@@ -64,19 +64,6 @@ export function PredictionsDashboard({ next7Days, categoryPrediction }) {
                     })}
                 </div>
             </div>
-
-            {/* Insights */}
-            <Card className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 flex-shrink-0">
-                <div className="flex gap-3">
-                    <Zap className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                        <p className="text-sm font-semibold text-gray-800">Trend Insight</p>
-                        <p className="text-xs text-gray-600 mt-1">
-                            📈 Overall sales are expected to increase by 12-15% next week. Lunch and Dinner categories show the strongest growth potential.
-                        </p>
-                    </div>
-                </div>
-            </Card>
         </div>
     );
 }

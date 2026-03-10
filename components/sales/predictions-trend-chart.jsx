@@ -36,7 +36,7 @@ export function PredictionsTrendChart({ data }) {
             options: {
                 chart: {
                     type: "bar",
-                    height: 350,
+                    height: 400,
                     toolbar: {
                         show: true,
                         tools: {
